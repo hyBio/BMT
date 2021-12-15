@@ -79,7 +79,7 @@ class main_window(QMainWindow):
     def timer_TimeOut(self):
         self.n += 1
         self.books = self.books_info.loc[self.n, "books_name"]
-        if self.n > 99:
+        if self.n >= 99:
             self.n = 0
         self.pic = _translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(self.books))
         self.ui.books_recommend_pic.setText(self.pic)
