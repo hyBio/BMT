@@ -32,8 +32,10 @@ class main_window(QMainWindow):
         timer.timeout.connect(self.show_current_time)
         timer.start()
 
-        # 未登录时注销按钮无法触发
+        # 未登录时注销、购买记录、去购买按钮无法触发
         self.ui.log_out.setEnabled(False)
+        self.ui.purchase_history.setEnabled(False)
+        self.ui.buy.setEnabled(False)
         self.log_in = log_in()
 
         # 登录跳转
@@ -147,6 +149,8 @@ class log_in(QMainWindow):
                         self.main_window.ui.welcome_log_in.setText(_translate("BMT_client_main_windows", "{}".format(username)))
                         self.main_window.ui.welcome_log_in.setEnabled(False)
                         self.main_window.ui.log_out.setEnabled(True)
+                        self.ui.purchase_history.setEnabled(True)
+                        self.ui.buy.setEnabled(True)
 
                 else:
                     QMessageBox.information(self, '失败', '密码错误，请确认后重试',

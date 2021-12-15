@@ -61,7 +61,7 @@ class Ui_BMT_client_main_windows(object):
         font.setPointSize(11)
         self.search_input.setFont(font)
         self.search_input.setText("")
-        self.search_input.setMaxLength(15)
+        self.search_input.setMaxLength(30)
         self.search_input.setObjectName("search_input")
         self.search = QtWidgets.QPushButton(self.centralwidget)
         self.search.setGeometry(QtCore.QRect(690, 90, 75, 40))
