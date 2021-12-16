@@ -154,8 +154,8 @@ class log_in(QMainWindow):
                         self.main_window.ui.welcome_log_in.setText(_translate("BMT_client_main_windows", "{}".format(username)))
                         self.main_window.ui.welcome_log_in.setEnabled(False)
                         self.main_window.ui.log_out.setEnabled(True)
-                        self.ui.purchase_history.setEnabled(True)
-                        self.ui.buy.setEnabled(True)
+                        self.main_window.ui.purchase_history.setEnabled(True)
+                        self.main_window.ui.buy.setEnabled(True)
 
                 else:
                     QMessageBox.information(self, '失败', '密码错误，请确认后重试',
