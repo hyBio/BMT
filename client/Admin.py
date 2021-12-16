@@ -169,11 +169,9 @@ class AdminWindow(QWidget):
         self.select_all_button.move(1040, 280)
         self.clear_button.move(1040, 400)
         self.refresh_button.move(1040, 460)
-
         self.update_button.move(430, 700)
         self.add_button_.move(1020, 700)
         self.show_password_button.move(1020, 750)
-
         self.quit_button.move(500,820)
 
         # 绑定事件

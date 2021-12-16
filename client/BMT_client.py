@@ -10,6 +10,7 @@ from ui import main_windows as mw
 from ui import log_in as li
 from ui import register_success as rs
 from ui import register_to as rt
+from ui import shop_windows as sw
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -144,6 +145,10 @@ class log_in(QMainWindow):
                     # 如果是管理员，进入管理界面
                     if username == 'admin':
                         self.admin_win.show()
+                    # 如果是书店用户，则进入书店主页
+                    elif username == 'shop':
+                        self.shop_window = shop_window()
+                        self.shop_window.show()
                     # 如果是普通用户，则进入个人主页，并取消登录按钮的功能
                     else:
                         self.main_window.ui.welcome_log_in.setText(_translate("BMT_client_main_windows", "{}".format(username)))
@@ -312,6 +317,12 @@ class register_success(QMainWindow):
         self.log_in = log_in()
         self.close()
         self.log_in.show()
+
+class shop_window(QMainWindow):
+    def __init__(self, parent=None):
+        super(shop_window, self).__init__(parent)
+        self.ui = sw.Ui_BMT_client_main_windows()
+        self.ui.setupUi(self)
 
 
 if __name__ == "__main__":

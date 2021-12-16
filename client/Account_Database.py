@@ -47,8 +47,6 @@ class Database:
             default = "INSERT INTO data(username, password, created_time) VALUES('storehouse', 'storehouse123', ?)"  # 设置初始的账号密码
             cursor.execute(default, (created_time,))
         connect.commit()
-
-
         connect.close()
 
     def insert_table(self, username, password):

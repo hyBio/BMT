@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>360</width>
+    <height>377</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>时间选择</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../resource.qrc">
+    <normaloff>:/ico/resource/BMT_64.ico</normaloff>:/ico/resource/BMT_64.ico</iconset>
+  </property>
+  <widget class="QCalendarWidget" name="calendarWidget">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>10</y>
+     <width>300</width>
+     <height>220</height>
+    </rect>
+   </property>
+   <property name="firstDayOfWeek">
+    <enum>Qt::Sunday</enum>
+   </property>
+  </widget>
+  <widget class="QTimeEdit" name="timeEdit">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>240</y>
+     <width>300</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="currentSection">
+    <enum>QDateTimeEdit::SecondSection</enum>
+   </property>
+   <property name="displayFormat">
+    <string>HH:mm:ss</string>
+   </property>
+   <property name="calendarPopup">
+    <bool>true</bool>
+   </property>
+   <property name="currentSectionIndex">
+    <number>2</number>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>340</y>
+     <width>100</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>选好了</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="current_time">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>340</y>
+     <width>100</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Agency FB</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>当前时间</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="date_time">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>280</y>
+     <width>250</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Times New Roman</family>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../resource.qrc"/>
+ </resources>
+ <connections/>
+</ui>

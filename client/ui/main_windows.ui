@@ -128,7 +128,7 @@
      <string/>
     </property>
     <property name="maxLength">
-     <number>15</number>
+     <number>30</number>
     </property>
     <property name="placeholderText">
      <string>搜一下吧，准有你喜欢的</string>
