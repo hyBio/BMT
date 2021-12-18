@@ -92,19 +92,15 @@ class main_window(QMainWindow):
             sql = 'SELECT * FROM database WHERE [books_name]=?'
             result = cursor.execute(sql, (book,))
             data = result.fetchall()[0]
-            books_type = data[2]
-            books_name = data[3]
-            selling_price = data[6]
             sales_this_week = data[7]
             cumulative_sales = data[8]
             inventory = data[9]
-            print(inventory)
-            sql = 'UPDATE database SET [inventory]=? WHERE [books_name]=?'
-            cursor.execute(sql,(inventory-1, book,))
-            sql = 'UPDATE database SET [sales_this_week]=? WHERE [books_name]=?'
-            cursor.execute(sql,(sales_this_week+1, book,))
-            sql = 'UPDATE database SET [cumulative_sales]=? WHERE [books_name]=?'
-            cursor.execute(sql,(cumulative_sales+1, book,))
+            sql = 'UPDATE database SET [inventory]="%s" WHERE [books_name]="%s"' % (inventory-1, book)
+            cursor.execute(sql)
+            sql = 'UPDATE database SET [sales_this_week]="%s" WHERE [books_name]="%s"' % (sales_this_week+1, book)
+            cursor.execute(sql)
+            sql = 'UPDATE database SET [cumulative_sales]="%s" WHERE [books_name]="%s"' % (cumulative_sales+1, book)
+            cursor.execute(sql)
             connect.commit()
             connect.close()
 
@@ -117,11 +113,15 @@ class main_window(QMainWindow):
                                                       date.tm_min,
                                                       date.tm_sec)
             username = self.ui.welcome_log_in.text()
+            books_type = data[2]
+            books_name = data[3]
+            selling_price = data[6]
             connect = sqlite3.connect("./purchase_history.db")
             cursor = connect.cursor()
-            sql = "CREATE TABLE IF NOT EXISTS database(username TEXT, books_type TEXT, books_name TEXT, selling_price TEXT, created_time TEXT)"
+            sql = "CREATE TABLE IF NOT EXISTS database([username] TEXT, [books_type] TEXT, [books_name] TEXT, [selling_price] TEXT, [created_time] TEXT)"
             cursor.execute(sql)
-            sql = "INSERT INTO database(username, books_type, books_name, selling_price, created_time) VALUES(?,?,?,?,?)"
+            cursor = connect.cursor()
+            sql = "INSERT INTO database ([username], [books_type], [books_name], [selling_price], [created_time]) VALUES （?,?,?,?,?)"
             cursor.execute(sql, (username, books_type, books_name, selling_price, created_time,))
             connect.commit()
             connect.close()
@@ -135,7 +135,7 @@ class main_window(QMainWindow):
             self.ui.table.clearContents()
             connect = sqlite3.connect(self.database)
             cursor = connect.cursor()
-            sql = 'SELECT * FROM database WHERE [books_name] LIKE "%s" ORDER BY [sales_this_week]' % ('%%%s%%' % search_input)
+            sql = 'SELECT * FROM database WHERE [books_name] LIKE "%s" ORDER BY [sales_this_week] DESC' % ('%%%s%%' % search_input)
             result = cursor.execute(sql)
             data = result.fetchall()
             connect.commit()
@@ -164,23 +164,21 @@ class main_window(QMainWindow):
         self.ui.table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 只能选择整行
         self.ui.table.setColumnCount(6)  # 设置列数
         self.ui.table.setHorizontalHeaderLabels(["购买意向", "书籍类别", "书籍名称", "近期销量", "售价", "库存"])  # 设置首行
-        self.ui.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 表格中的内容设置为无法修改
-        # self.ui.table.verticalHeader().hide()  # 把序号隐藏
-        # self.ui.table.setSortingEnabled(False)  # 自动排序
+        # self.ui.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 表格中的内容设置为无法修改
         self.database = './books_info.db'
         data = self.read_table()
         for books_info in data:
             self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
 
-    def read_table(self, pic_type="total",books_type="total"):
+    def read_table(self, pic_type="total", books_type="total"):
         """读取数据库中的所有元素"""
         connect = sqlite3.connect(self.database)
         cursor = connect.cursor()
         if books_type == "total":
-            sql = 'SELECT * FROM database ORDER BY [sales_this_week]'
+            sql = 'SELECT * FROM database ORDER BY [sales_this_week] DESC'
             result = cursor.execute(sql)
         else:
-            sql = 'SELECT * FROM database WHERE [books_type]=? ORDER BY [sales_this_week]'
+            sql = 'SELECT * FROM database WHERE [books_type]=? ORDER BY [sales_this_week] DESC'
             result = cursor.execute(sql, (books_type,))
         if pic_type == "total":
             data = result.fetchall()
