@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import *
 from Account_Database import Database
 from Admin import AdminWindow
 import sys
-import pandas as pd
+import time
 import sqlite3
 
 
@@ -76,6 +76,55 @@ class main_window(QMainWindow):
         self.ui.psychology.clicked.connect(lambda :self.type_change("心理"))
         self.ui.total_books.clicked.connect(lambda :self.type_change("total"))
         self.ui.search.clicked.connect(self.search)
+        self.ui.buy.clicked.connect(self.buy)
+
+    def buy(self):
+        choose_list = []
+        for i in self.ui.check_list:
+            if i.isChecked():
+                books_name = self.ui.table.item(self.ui.check_list.index(i), 2).text()
+                choose_list.append(books_name)
+
+        for book in choose_list:
+            # 在原先基础之上减去购买的一本
+            connect = sqlite3.connect(self.database)
+            cursor = connect.cursor()
+            sql = 'SELECT * FROM database WHERE [books_name]=?'
+            result = cursor.execute(sql, (book,))
+            data = result.fetchall()[0]
+            books_type = data[2]
+            books_name = data[3]
+            selling_price = data[6]
+            sales_this_week = data[7]
+            cumulative_sales = data[8]
+            inventory = data[9]
+            print(inventory)
+            sql = 'UPDATE database SET [inventory]=? WHERE [books_name]=?'
+            cursor.execute(sql,(inventory-1, book,))
+            sql = 'UPDATE database SET [sales_this_week]=? WHERE [books_name]=?'
+            cursor.execute(sql,(sales_this_week+1, book,))
+            sql = 'UPDATE database SET [cumulative_sales]=? WHERE [books_name]=?'
+            cursor.execute(sql,(cumulative_sales+1, book,))
+            connect.commit()
+            connect.close()
+
+            # 构造购买记录（销售记录）数据库
+            date = time.localtime()
+            created_time = "{}-{}-{}-{}:{}:{}".format(date.tm_year,
+                                                      date.tm_mon,
+                                                      date.tm_mday,
+                                                      date.tm_hour,
+                                                      date.tm_min,
+                                                      date.tm_sec)
+            username = self.ui.welcome_log_in.text()
+            connect = sqlite3.connect("./purchase_history.db")
+            cursor = connect.cursor()
+            sql = "CREATE TABLE IF NOT EXISTS database(username TEXT, books_type TEXT, books_name TEXT, selling_price TEXT, created_time TEXT)"
+            cursor.execute(sql)
+            sql = "INSERT INTO database(username, books_type, books_name, selling_price, created_time) VALUES(?,?,?,?,?)"
+            cursor.execute(sql, (username, books_type, books_name, selling_price, created_time,))
+            connect.commit()
+            connect.close()
 
     def search(self):
         search_input = self.ui.search_input.text()
@@ -89,6 +138,8 @@ class main_window(QMainWindow):
             sql = 'SELECT * FROM database WHERE [books_name] LIKE "%s" ORDER BY [sales_this_week]' % ('%%%s%%' % search_input)
             result = cursor.execute(sql)
             data = result.fetchall()
+            connect.commit()
+            connect.close()
             for books_info in data:
                 self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
 
@@ -119,7 +170,7 @@ class main_window(QMainWindow):
         self.database = './books_info.db'
         data = self.read_table()
         for books_info in data:
-            self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[-1])
+            self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
 
     def read_table(self, pic_type="total",books_type="total"):
         """读取数据库中的所有元素"""
@@ -127,9 +178,10 @@ class main_window(QMainWindow):
         cursor = connect.cursor()
         if books_type == "total":
             sql = 'SELECT * FROM database ORDER BY [sales_this_week]'
+            result = cursor.execute(sql)
         else:
-            sql = 'SELECT * FROM database WHERE [books_type]="%s" ORDER BY [sales_this_week]' % (books_type)
-        result = cursor.execute(sql)
+            sql = 'SELECT * FROM database WHERE [books_type]=? ORDER BY [sales_this_week]'
+            result = cursor.execute(sql, (books_type,))
         if pic_type == "total":
             data = result.fetchall()
         elif pic_type == "books_recommend":
@@ -198,6 +250,7 @@ class main_window(QMainWindow):
 
     def timer_TimeOut1(self):
         self.ui.call_for_help.setText(_translate("BMT_client_main_windows", "联系客服(点我复制)"))
+
 
 class log_in(QMainWindow):
     def __init__(self, parent=None):
