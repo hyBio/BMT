@@ -37,12 +37,12 @@ class Database:
             default = "INSERT INTO data(username, password, created_time) VALUES('admin', 'admin123', ?)"  # 设置初始的账号密码
             cursor.execute(default, (created_time,))
         connect.commit()
-        if not self.is_has("shop"): #商家的用户名一定位 shop !
+        if not self.is_has("shop"): #商家的用户名一定为 shop !
             created_time = self.get_time()
             default = "INSERT INTO data(username, password, created_time) VALUES('shop', 'shop123', ?)"  # 设置初始的账号密码
             cursor.execute(default, (created_time,))
         connect.commit()
-        if not self.is_has("storehouse"): #商家的用户名一定位 shop !
+        if not self.is_has("storehouse"): #商家的用户名一定为 storehouse !
             created_time = self.get_time()
             default = "INSERT INTO data(username, password, created_time) VALUES('storehouse', 'storehouse123', ?)"  # 设置初始的账号密码
             cursor.execute(default, (created_time,))

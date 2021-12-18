@@ -75,6 +75,22 @@ class main_window(QMainWindow):
         self.ui.comics.clicked.connect(lambda :self.type_change("漫画"))
         self.ui.psychology.clicked.connect(lambda :self.type_change("心理"))
         self.ui.total_books.clicked.connect(lambda :self.type_change("total"))
+        self.ui.search.clicked.connect(self.search)
+
+    def search(self):
+        search_input = self.ui.search_input.text()
+        if search_input == None:
+            self.show_table()
+        else:
+            self.ui.table.setRowCount(0)
+            self.ui.table.clearContents()
+            connect = sqlite3.connect(self.database)
+            cursor = connect.cursor()
+            sql = 'SELECT * FROM database WHERE [books_name] LIKE "%s" ORDER BY [sales_this_week]' % ('%%%s%%' % search_input)
+            result = cursor.execute(sql)
+            data = result.fetchall()
+            for books_info in data:
+                self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
 
     def type_change(self, books_type):
         self.ui.table.setRowCount(0)
