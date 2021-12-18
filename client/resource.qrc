@@ -4,12 +4,13 @@
     <file>resource/BMT_64.ico</file>
     <file>resource/BMT_128.ico</file>
   </qresource>
-  <qresource prefix="logo">
-    <file>resource/BMT.png</file>
-    <file>resource/BMT_128.ico</file>
-  </qresource>
   <qresource prefix="books">
+    <file>resource/books_picture/11枚戒指 禅师菲尔·杰克逊自传 Eleven.jpg</file>
+    <file>resource/books_picture/365日 一人一猫一世界.jpg</file>
+    <file>resource/books_picture/DK历史百科.jpg</file>
+    <file>resource/books_picture/EPC工程总承包合同管理与索赔实务.jpg</file>
     <file>resource/books_picture/Python语言程序设计基础.jpg</file>
+    <file>resource/books_picture/阿德勒：在自我启发中成长.jpg</file>
     <file>resource/books_picture/爱上手冲咖啡.jpg</file>
     <file>resource/books_picture/八路军史.jpg</file>
     <file>resource/books_picture/巴赫创意曲集.jpg</file>
@@ -17,32 +18,59 @@
     <file>resource/books_picture/百年孤独.jpg</file>
     <file>resource/books_picture/拜厄钢琴基本教程.jpg</file>
     <file>resource/books_picture/边城.jpg</file>
+    <file>resource/books_picture/蝙蝠侠：世界.jpg</file>
+    <file>resource/books_picture/变形金刚：威震天万岁.jpg</file>
     <file>resource/books_picture/财政学.jpg</file>
     <file>resource/books_picture/沧浪之水.jpg</file>
     <file>resource/books_picture/茶道.jpg</file>
     <file>resource/books_picture/超简单日式料理.jpg</file>
     <file>resource/books_picture/车尔尼钢琴初步教程.jpg</file>
+    <file>resource/books_picture/城市详细规划.jpg</file>
     <file>resource/books_picture/厨艺的常识.jpg</file>
+    <file>resource/books_picture/从零开始学做物业经理.jpg</file>
+    <file>resource/books_picture/存在的艺术（弗洛姆作品系列）.jpg</file>
     <file>resource/books_picture/大国悲剧.jpg</file>
     <file>resource/books_picture/大国的兴衰.jpg</file>
     <file>resource/books_picture/大国崛起.jpg</file>
     <file>resource/books_picture/大国战略.jpg</file>
     <file>resource/books_picture/大外交.jpg</file>
     <file>resource/books_picture/弹好吉他.jpg</file>
+    <file>resource/books_picture/倒退的帝国：朱元璋的成与败.jpg</file>
+    <file>resource/books_picture/地理与世界霸权.jpg</file>
+    <file>resource/books_picture/地狱星.jpg</file>
+    <file>resource/books_picture/灯塔.jpg</file>
     <file>resource/books_picture/邓小平的智慧.jpg</file>
     <file>resource/books_picture/低糖烘焙.jpg</file>
     <file>resource/books_picture/笛子自学一月通.jpg</file>
+    <file>resource/books_picture/动机与人格（第3版）.jpg</file>
     <file>resource/books_picture/对赌.jpg</file>
+    <file>resource/books_picture/发现与推理：考古纪事本末.jpg</file>
+    <file>resource/books_picture/翻滚吧班长1.jpg</file>
+    <file>resource/books_picture/梵高传.jpg</file>
+    <file>resource/books_picture/非暴力沟通.jpg</file>
     <file>resource/books_picture/风味人间.jpg</file>
+    <file>resource/books_picture/弗洛伊德作品：梦的解析+性学三论+精神分析引论+自我与本我（共4本）.jpg</file>
     <file>resource/books_picture/钢琴基础教程.jpg</file>
     <file>resource/books_picture/高等数学（第七版上册）.jpg</file>
+    <file>resource/books_picture/工程地质手册（第五版）.jpg</file>
+    <file>resource/books_picture/工程勘察设计收费标准.jpg</file>
+    <file>resource/books_picture/工作细胞（1-5）.jpg</file>
     <file>resource/books_picture/古琴实用教程.jpg</file>
     <file>resource/books_picture/古筝.jpg</file>
+    <file>resource/books_picture/故宫六百年.jpg</file>
     <file>resource/books_picture/故宫宴.jpg</file>
+    <file>resource/books_picture/关键的规划理念（城市与生态文明丛书）.jpg</file>
+    <file>resource/books_picture/灌篮高手 新装再编版（套装20册）.jpg</file>
     <file>resource/books_picture/国际贸易.jpg</file>
+    <file>resource/books_picture/国土空间规划原理.jpg</file>
     <file>resource/books_picture/哈农钢琴练指法.jpg</file>
+    <file>resource/books_picture/海绵城市景观设计手册.jpg</file>
+    <file>resource/books_picture/汗青堂世界经济史套装：棉花帝国+白银资本+欧洲与没有历史的人（共3册）.jpg</file>
     <file>resource/books_picture/赫利美利小提琴音阶练习.jpg</file>
     <file>resource/books_picture/红楼梦.jpg</file>
+    <file>resource/books_picture/红书.jpg</file>
+    <file>resource/books_picture/混凝土外加剂实用技术手册.jpg</file>
+    <file>resource/books_picture/活出生命的意义.jpg</file>
     <file>resource/books_picture/机械基础.jpg</file>
     <file>resource/books_picture/机械制图.jpg</file>
     <file>resource/books_picture/吉他入门经典教程.jpg</file>
@@ -53,61 +81,133 @@
     <file>resource/books_picture/计算机网络.jpg</file>
     <file>resource/books_picture/计算机应用基础.jpg</file>
     <file>resource/books_picture/计算机组成原理.jpg</file>
+    <file>resource/books_picture/建党100周年伟人传记纪念版（全三册）.jpg</file>
+    <file>resource/books_picture/建设项目全过程工程咨询理论与实务.jpg</file>
+    <file>resource/books_picture/建筑幕墙技术.jpg</file>
+    <file>resource/books_picture/讲谈社：日本的历史套装（全10册）.jpg</file>
+    <file>resource/books_picture/今日TA：人际沟通分析新论.jpg</file>
     <file>resource/books_picture/金属材料与热处理.jpg</file>
     <file>resource/books_picture/经典川菜.jpg</file>
     <file>resource/books_picture/经典老歌400首.jpg</file>
     <file>resource/books_picture/经济学原理.jpg</file>
+    <file>resource/books_picture/精神分析引论（德语未删节译本）.jpg</file>
+    <file>resource/books_picture/鸠摩罗什传.jpg</file>
     <file>resource/books_picture/局外人.jpg</file>
     <file>resource/books_picture/决战朝鲜.jpg</file>
     <file>resource/books_picture/抗美援朝.jpg</file>
     <file>resource/books_picture/烤箱料理.jpg</file>
+    <file>resource/books_picture/孔子传.jpg</file>
     <file>resource/books_picture/口琴基础教程.jpg</file>
     <file>resource/books_picture/狂人日记.jpg</file>
     <file>resource/books_picture/李奇微回忆录.jpg</file>
+    <file>resource/books_picture/梁启超传.jpg</file>
+    <file>resource/books_picture/林徽因与梁思成（第3版）.jpg</file>
     <file>resource/books_picture/零起步学五线谱.jpg</file>
+    <file>resource/books_picture/刘邦：帝王将相系列.jpg</file>
+    <file>resource/books_picture/鹿智者的法则：如何唤醒内在的智慧.jpg</file>
     <file>resource/books_picture/罗生门.jpg</file>
     <file>resource/books_picture/马克思靠谱.jpg</file>
+    <file>resource/books_picture/曼巴精神：科比自传（精装）.jpg</file>
     <file>resource/books_picture/美军全球运作内幕.jpg</file>
+    <file>resource/books_picture/美丽黑暗.jpg</file>
+    <file>resource/books_picture/梦圆大地：袁隆平传.jpg</file>
     <file>resource/books_picture/面包.jpg</file>
+    <file>resource/books_picture/名侦探柯南彩色漫画（套装1-10册）.jpg</file>
+    <file>resource/books_picture/谋帅刘伯承.jpg</file>
+    <file>resource/books_picture/南京大屠杀 第二次世界大战中被遗忘的大浩劫.jpg</file>
+    <file>resource/books_picture/你好！公主（1-7）.jpg</file>
+    <file>resource/books_picture/牛津世界城市史研究.jpg</file>
+    <file>resource/books_picture/欧洲古典建筑细部（套装共4册）.jpg</file>
     <file>resource/books_picture/平凡的世界.jpg</file>
     <file>resource/books_picture/普通心理学.jpg</file>
     <file>resource/books_picture/奇遇之年.jpg</file>
+    <file>resource/books_picture/千与千寻.jpg</file>
+    <file>resource/books_picture/趣说中国史.jpg</file>
+    <file>resource/books_picture/全国民用建筑工程设计技术措施：暖通空调·动力.jpg</file>
+    <file>resource/books_picture/全过程工程咨询实践指南.jpg</file>
+    <file>resource/books_picture/全球通史历史百科全书（套装共10册）.jpg</file>
     <file>resource/books_picture/人气烘焙6000例.jpg</file>
     <file>resource/books_picture/人生海海.jpg</file>
+    <file>resource/books_picture/人心.jpg</file>
+    <file>resource/books_picture/人性的弱点.jpg</file>
+    <file>resource/books_picture/任正非传（精装新版）.jpg</file>
+    <file>resource/books_picture/荣格心理学.jpg</file>
+    <file>resource/books_picture/荣格自传：记忆、梦、思考.jpg</file>
+    <file>resource/books_picture/如果历史是一群喵1-3（套装共3册）.jpg</file>
     <file>resource/books_picture/儒林外史.jpg</file>
+    <file>resource/books_picture/森田疗法：医治心理障碍的良方.jpg</file>
     <file>resource/books_picture/杀死一只知更鸟.jpg</file>
     <file>resource/books_picture/山月记.jpg</file>
+    <file>resource/books_picture/上下五千年（彩图珍藏版）.jpg</file>
     <file>resource/books_picture/舌尖上的中国.jpg</file>
+    <file>resource/books_picture/社会性动物（第12版）.jpg</file>
     <file>resource/books_picture/深度营养.jpg</file>
     <file>resource/books_picture/神经网络设计.jpg</file>
     <file>resource/books_picture/生命线.jpg</file>
     <file>resource/books_picture/生物化学与分子生物学.jpg</file>
     <file>resource/books_picture/胜者思维.jpg</file>
     <file>resource/books_picture/食物与厨艺.jpg</file>
+    <file>resource/books_picture/史努比漫画全集 1961-1962.jpg</file>
     <file>resource/books_picture/苏菲的世界.jpg</file>
     <file>resource/books_picture/苏联兴旺史纲.jpg</file>
+    <file>resource/books_picture/他改变了中国：江泽民传.jpg</file>
+    <file>resource/books_picture/唐朝那些事儿（套装七册）.jpg</file>
+    <file>resource/books_picture/天才的拓荒者——冯·诺伊曼传.jpg</file>
+    <file>resource/books_picture/天津历史与文化.jpg</file>
     <file>resource/books_picture/听音乐.jpg</file>
+    <file>resource/books_picture/万历十五年（增订纪念本）.jpg</file>
+    <file>resource/books_picture/王朔：至女儿书（2015版）.jpg</file>
     <file>resource/books_picture/文城.jpg</file>
+    <file>resource/books_picture/我的父亲邓小平·战争年代.jpg</file>
     <file>resource/books_picture/我的咖啡生活提案.jpg</file>
+    <file>resource/books_picture/我生有涯愿无尽：漱溟自述文录.jpg</file>
+    <file>resource/books_picture/乌合之众（经典全译本）.jpg</file>
     <file>resource/books_picture/五角大楼之脑.jpg</file>
+    <file>resource/books_picture/西域探险记.jpg</file>
+    <file>resource/books_picture/嘻哈小天才2.jpg</file>
+    <file>resource/books_picture/细读五代十国七十年.jpg</file>
     <file>resource/books_picture/线性代数及其应用.jpg</file>
     <file>resource/books_picture/消失的13级台阶.jpg</file>
     <file>resource/books_picture/小王子.jpg</file>
     <file>resource/books_picture/小奏鸣曲集.jpg</file>
+    <file>resource/books_picture/心理学与生活（第19版）精装.jpg</file>
+    <file>resource/books_picture/新民说：吐鲁番出土墓志汇考.jpg</file>
+    <file>resource/books_picture/新世纪福音战士1-14（套装共14册）.jpg</file>
     <file>resource/books_picture/信息系统项目管理师教程.jpg</file>
     <file>resource/books_picture/叙利亚战争启示录.jpg</file>
     <file>resource/books_picture/液压传动.jpg</file>
+    <file>resource/books_picture/译林漫画：父与子全集（少儿彩绘版）.jpg</file>
     <file>resource/books_picture/意大利歌曲集.jpg</file>
     <file>resource/books_picture/音乐的极境.jpg</file>
     <file>resource/books_picture/音乐理论基础.jpg</file>
+    <file>resource/books_picture/银之匙13-15.jpg</file>
+    <file>resource/books_picture/印卡石.jpg</file>
+    <file>resource/books_picture/鱼（全2册）.jpg</file>
     <file>resource/books_picture/鱼米之乡.jpg</file>
+    <file>resource/books_picture/园冶（手绘彩图修订版）.jpg</file>
     <file>resource/books_picture/越南密战.jpg</file>
     <file>resource/books_picture/早餐星球.jpg</file>
+    <file>resource/books_picture/占有还是存在.jpg</file>
+    <file>resource/books_picture/战神粟裕（白金纪念版）.jpg</file>
     <file>resource/books_picture/战争与大国崛起.jpg</file>
     <file>resource/books_picture/至味在人间.jpg</file>
+    <file>resource/books_picture/中国古代建筑图片库：帝王陵寝.jpg</file>
+    <file>resource/books_picture/中国建筑常识.jpg</file>
+    <file>resource/books_picture/中国建筑图解词典.jpg</file>
+    <file>resource/books_picture/中国历史常识.jpg</file>
     <file>resource/books_picture/中国美食地理.jpg</file>
+    <file>resource/books_picture/中国通史（大字本 套装共5册）.jpg</file>
+    <file>resource/books_picture/中国招标采购常用法规选编（2021）.jpg</file>
     <file>resource/books_picture/中南海人物春秋.jpg</file>
+    <file>resource/books_picture/周恩来传（红色收藏纪念版）.jpg</file>
     <file>resource/books_picture/追风筝的人.jpg</file>
+    <file>resource/books_picture/资治通鉴（全六卷 平装插盒珍藏版）.jpg</file>
+    <file>resource/books_picture/自卑与超越（经典全译本）.jpg</file>
+    <file>resource/books_picture/走进钱学森.jpg</file>
     <file>resource/books_picture/罪与罚.jpg</file>
+  </qresource>
+  <qresource prefix="logo">
+    <file>resource/BMT.png</file>
+    <file>resource/BMT_128.ico</file>
   </qresource>
 </RCC>

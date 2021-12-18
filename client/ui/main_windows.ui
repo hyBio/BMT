@@ -113,7 +113,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>90</y>
+      <y>80</y>
       <width>471</width>
       <height>40</height>
      </rect>
@@ -138,7 +138,7 @@
     <property name="geometry">
      <rect>
       <x>690</x>
-      <y>90</y>
+      <y>80</y>
       <width>75</width>
       <height>40</height>
      </rect>
@@ -253,7 +253,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/books/resource/books_picture/Python语言程序设计基础.jpg&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/books/resource/books_picture/罪与罚.jpg&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QLabel" name="books_on_sale_pic">
@@ -331,16 +331,16 @@
    <widget class="QPushButton" name="novel">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>150</y>
-      <width>100</width>
-      <height>30</height>
+      <x>190</x>
+      <y>120</y>
+      <width>80</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>幼圆</family>
-      <pointsize>11</pointsize>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -358,16 +358,16 @@
    <widget class="QPushButton" name="music">
     <property name="geometry">
      <rect>
-      <x>650</x>
-      <y>150</y>
-      <width>100</width>
-      <height>30</height>
+      <x>620</x>
+      <y>120</y>
+      <width>80</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>幼圆</family>
-      <pointsize>11</pointsize>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -385,16 +385,16 @@
    <widget class="QPushButton" name="political">
     <property name="geometry">
      <rect>
-      <x>430</x>
-      <y>150</y>
-      <width>100</width>
-      <height>30</height>
+      <x>400</x>
+      <y>120</y>
+      <width>80</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>幼圆</family>
-      <pointsize>11</pointsize>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -412,16 +412,16 @@
    <widget class="QPushButton" name="education">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>150</y>
-      <width>100</width>
-      <height>30</height>
+      <x>290</x>
+      <y>120</y>
+      <width>80</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>幼圆</family>
-      <pointsize>11</pointsize>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -439,16 +439,16 @@
    <widget class="QPushButton" name="cooking">
     <property name="geometry">
      <rect>
-      <x>540</x>
-      <y>150</y>
-      <width>100</width>
-      <height>30</height>
+      <x>510</x>
+      <y>120</y>
+      <width>80</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>幼圆</family>
-      <pointsize>11</pointsize>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -577,6 +577,168 @@
      <string>注销</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="biography">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>143</y>
+      <width>80</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="text">
+     <string>传记</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="architecture">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>143</y>
+      <width>80</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="text">
+     <string>建筑</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="comics">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>143</y>
+      <width>80</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="text">
+     <string>漫画</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="psychology">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>143</y>
+      <width>80</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="text">
+     <string>心理</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="history">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>143</y>
+      <width>80</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="text">
+     <string>历史</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="total_books">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>120</y>
+      <width>60</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>12</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="text">
+     <string>全部</string>
+    </property>
+   </widget>
    <zorder>client_logo</zorder>
    <zorder>search_input</zorder>
    <zorder>welcome_log_in</zorder>
@@ -601,6 +763,12 @@
    <zorder>buy_log</zorder>
    <zorder>purchase_history</zorder>
    <zorder>log_out</zorder>
+   <zorder>biography</zorder>
+   <zorder>architecture</zorder>
+   <zorder>comics</zorder>
+   <zorder>psychology</zorder>
+   <zorder>history</zorder>
+   <zorder>total_books</zorder>
   </widget>
  </widget>
  <tabstops>

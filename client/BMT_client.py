@@ -38,6 +38,7 @@ class main_window(QMainWindow):
         self.ui.log_out.setEnabled(False)
         self.ui.purchase_history.setEnabled(False)
         self.ui.buy.setEnabled(False)
+        self.ui.books_for_you.setEnabled(False)
         self.log_in = log_in()
 
         # 登录跳转
@@ -52,17 +53,9 @@ class main_window(QMainWindow):
 
         # 设置定时器定时更换书籍图片
         self.time1 = QTimer(self)
-        self.time1.timeout.connect(self.timer_TimeOut)
+        self.time1.timeout.connect(self.print_books_pic)
         self.time1.start(1000)
-
-        # 读取书籍名字进行循环播放
-        self.books_info = pd.read_csv(r"./books_info.csv", header=0)
         self.n = 0
-        self.books = self.books_info.loc[self.n, "books_name"]
-        self.pic = _translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(self.books))
-        self.ui.books_recommend_pic.setText(self.pic)
-        self.ui.books_on_sale_pic.setText(self.pic)
-        self.ui.books_for_you_pic.setText(self.pic)
 
         # 联系客服
         self.ui.call_for_help.clicked.connect(self.call_for_help)
@@ -70,6 +63,25 @@ class main_window(QMainWindow):
         self.ui.manual.clicked.connect(self.manual)
         # 展示表格
         self.show_table()
+        # 根据书籍类型切换输出的信息
+        self.ui.novel.clicked.connect(lambda :self.type_change("小说"))
+        self.ui.education.clicked.connect(lambda :self.type_change("教材"))
+        self.ui.political.clicked.connect(lambda :self.type_change("军政"))
+        self.ui.cooking.clicked.connect(lambda :self.type_change("烹饪"))
+        self.ui.music.clicked.connect(lambda :self.type_change("音乐"))
+        self.ui.history.clicked.connect(lambda :self.type_change("历史"))
+        self.ui.biography.clicked.connect(lambda :self.type_change("传记"))
+        self.ui.architecture.clicked.connect(lambda :self.type_change("建筑"))
+        self.ui.comics.clicked.connect(lambda :self.type_change("漫画"))
+        self.ui.psychology.clicked.connect(lambda :self.type_change("心理"))
+        self.ui.total_books.clicked.connect(lambda :self.type_change("total"))
+
+    def type_change(self, books_type):
+        self.ui.table.setRowCount(0)
+        self.ui.table.clearContents()
+        data = self.read_table("total", books_type)
+        for books_info in data:
+            self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
 
     def show_table(self):
         # 添加表格对象
@@ -77,33 +89,44 @@ class main_window(QMainWindow):
         # 保存所有的选择框
         self.ui.check_list = []
 
-        self.ui.table.setFixedWidth(760)  # 设置宽度
+        self.ui.table.setFixedWidth(720)  # 设置宽度
         self.ui.table.setFixedHeight(290)  # 设置高度
-        self.ui.table.move(20, 190)  # 设置显示的位置
-        #self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 自动填充
+        self.ui.table.move(40, 180)  # 设置显示的位置
+        self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 自动填充
+        self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)  # 自动填充
         self.ui.table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 只能选择整行
-        self.ui.table.setColumnCount(5)  # 设置列数
-        self.ui.table.setHorizontalHeaderLabels(["购买意向", "书籍类别", "书籍名称", "近期销量", "售价"])  # 设置首行
+        self.ui.table.setColumnCount(6)  # 设置列数
+        self.ui.table.setHorizontalHeaderLabels(["购买意向", "书籍类别", "书籍名称", "近期销量", "售价", "库存"])  # 设置首行
         self.ui.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 表格中的内容设置为无法修改
-        self.ui.table.verticalHeader().hide()  # 把序号隐藏
-        self.ui.table.setSortingEnabled(False)  # 自动排序
-        self.ui.database = './books_info.db'
+        # self.ui.table.verticalHeader().hide()  # 把序号隐藏
+        # self.ui.table.setSortingEnabled(False)  # 自动排序
+        self.database = './books_info.db'
         data = self.read_table()
         for books_info in data:
-            self.add_row(books_info[2], books_info[3], books_info[7],books_info[6])
+            self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[-1])
 
-    def read_table(self):
+    def read_table(self, pic_type="total",books_type="total"):
         """读取数据库中的所有元素"""
-        connect = sqlite3.connect(self.ui.database)
+        connect = sqlite3.connect(self.database)
         cursor = connect.cursor()
-        sql = 'SELECT * FROM database ORDER BY [books_name]'
+        if books_type == "total":
+            sql = 'SELECT * FROM database ORDER BY [sales_this_week]'
+        else:
+            sql = 'SELECT * FROM database WHERE [books_type]="%s" ORDER BY [sales_this_week]' % (books_type)
         result = cursor.execute(sql)
-        data = result.fetchall()
+        if pic_type == "total":
+            data = result.fetchall()
+        elif pic_type == "books_recommend":
+            data = result.fetchall()[0:10]
+        elif pic_type == "books_on_sale":
+            data = result.fetchall()[190:200]
+        else:
+            data = result.fetchall()
         connect.commit()
         connect.close()
         return data
 
-    def add_row(self, books_type, books_name, sales_this_week, current_selling_price):
+    def add_row(self, books_type, books_name, sales_this_week, current_selling_price, inventory):
         """在表格上添加一行新的内容"""
         row = self.ui.table.rowCount()  # 表格的行数
         self.ui.table.setRowCount(row + 1)  # 添加一行表格
@@ -111,6 +134,7 @@ class main_window(QMainWindow):
         self.ui.table.setItem(row, 2, QTableWidgetItem(str(books_name)))
         self.ui.table.setItem(row, 3, QTableWidgetItem(str(sales_this_week)))
         self.ui.table.setItem(row, 4, QTableWidgetItem(str(current_selling_price)))
+        self.ui.table.setItem(row, 5, QTableWidgetItem(str(inventory)))
 
         # 设置复选框
         widget = QWidget()
@@ -131,15 +155,19 @@ class main_window(QMainWindow):
         self.ui.date_time.setText(text)
         self.ui.date_time.setFont(QFont("Roman times", 12, QFont.Bold))
 
-    def timer_TimeOut(self):
+    def print_books_pic(self):
         self.n += 1
-        self.books = self.books_info.loc[self.n, "books_name"]
-        if self.n >= 99:
+        books_recommend = self.read_table("books_recommend")
+        books_recommend_pic = books_recommend[self.n-1][3]
+        books_on_sale = self.read_table("books_on_sale")
+        books_on_sale_pic = books_on_sale[self.n-1][3]
+        books_for_you = self.read_table("books_for_you")
+        books_for_you_pic = books_for_you[self.n-1][3]
+        if self.n >= 9:
             self.n = 0
-        self.pic = _translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(self.books))
-        self.ui.books_recommend_pic.setText(self.pic)
-        self.ui.books_on_sale_pic.setText(self.pic)
-        self.ui.books_for_you_pic.setText(self.pic)
+        self.ui.books_recommend_pic.setText(_translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(books_recommend_pic)))
+        self.ui.books_on_sale_pic.setText(_translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(books_on_sale_pic)))
+        self.ui.books_for_you_pic.setText(_translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(books_for_you_pic)))
 
     def log_out(self):
         self.ui.welcome_log_in.setText(_translate("BMT_client_main_windows", "您好，请登录"))
@@ -150,7 +178,7 @@ class main_window(QMainWindow):
         clipboard.setText("huyan35@mail2.sysu.edu.cn")
         self.ui.call_for_help.setText(_translate("BMT_client_main_windows", "已复制到剪切板"))
         self.time1 = QTimer(self)
-        self.time1.singleShot(1000,self.timer_TimeOut1)
+        self.time1.singleShot(1000, self.timer_TimeOut1)
 
     def timer_TimeOut1(self):
         self.ui.call_for_help.setText(_translate("BMT_client_main_windows", "联系客服(点我复制)"))
@@ -210,6 +238,7 @@ class log_in(QMainWindow):
                         self.main_window.ui.log_out.setEnabled(True)
                         self.main_window.ui.purchase_history.setEnabled(True)
                         self.main_window.ui.buy.setEnabled(True)
+                        self.main_window.ui.books_for_you.setEnabled(True)
 
                 else:
                     QMessageBox.information(self, '失败', '密码错误，请确认后重试',
