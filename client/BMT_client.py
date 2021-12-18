@@ -19,6 +19,7 @@ from Account_Database import Database
 from Admin import AdminWindow
 import sys
 import pandas as pd
+import sqlite3
 
 
 _translate = QtCore.QCoreApplication.translate
@@ -67,6 +68,59 @@ class main_window(QMainWindow):
         self.ui.call_for_help.clicked.connect(self.call_for_help)
         # 使用手册
         self.ui.manual.clicked.connect(self.manual)
+        # 展示表格
+        self.show_table()
+
+    def show_table(self):
+        # 添加表格对象
+        self.ui.table = QTableWidget(self)
+        # 保存所有的选择框
+        self.ui.check_list = []
+
+        self.ui.table.setFixedWidth(760)  # 设置宽度
+        self.ui.table.setFixedHeight(290)  # 设置高度
+        self.ui.table.move(20, 190)  # 设置显示的位置
+        #self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 自动填充
+        self.ui.table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 只能选择整行
+        self.ui.table.setColumnCount(5)  # 设置列数
+        self.ui.table.setHorizontalHeaderLabels(["购买意向", "书籍类别", "书籍名称", "近期销量", "售价"])  # 设置首行
+        self.ui.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 表格中的内容设置为无法修改
+        self.ui.table.verticalHeader().hide()  # 把序号隐藏
+        self.ui.table.setSortingEnabled(False)  # 自动排序
+        self.ui.database = './books_info.db'
+        data = self.read_table()
+        for books_info in data:
+            self.add_row(books_info[2], books_info[3], books_info[7],books_info[6])
+
+    def read_table(self):
+        """读取数据库中的所有元素"""
+        connect = sqlite3.connect(self.ui.database)
+        cursor = connect.cursor()
+        sql = 'SELECT * FROM database ORDER BY [books_name]'
+        result = cursor.execute(sql)
+        data = result.fetchall()
+        connect.commit()
+        connect.close()
+        return data
+
+    def add_row(self, books_type, books_name, sales_this_week, current_selling_price):
+        """在表格上添加一行新的内容"""
+        row = self.ui.table.rowCount()  # 表格的行数
+        self.ui.table.setRowCount(row + 1)  # 添加一行表格
+        self.ui.table.setItem(row, 1, QTableWidgetItem(str(books_type)))  # 将书籍信息插入到表格中
+        self.ui.table.setItem(row, 2, QTableWidgetItem(str(books_name)))
+        self.ui.table.setItem(row, 3, QTableWidgetItem(str(sales_this_week)))
+        self.ui.table.setItem(row, 4, QTableWidgetItem(str(current_selling_price)))
+
+        # 设置复选框
+        widget = QWidget()
+        check = QCheckBox()
+        self.ui.check_list.append(check)  # 添加到复选框列表中
+        check_lay = QHBoxLayout()
+        check_lay.addWidget(check)
+        check_lay.setAlignment(Qt.AlignCenter)
+        widget.setLayout(check_lay)
+        self.ui.table.setCellWidget(row, 0, widget)
 
     def manual(self):
         QDesktopServices.openUrl(QUrl("https://github.com/hyBio/BMT/blob/master/README.md"))

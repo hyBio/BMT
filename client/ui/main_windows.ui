@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>800</height>
+    <height>794</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -328,96 +328,6 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/books/resource/books_picture/音乐理论基础.jpg&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
-   <widget class="QTableWidget" name="tableWidget">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>190</y>
-      <width>761</width>
-      <height>291</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-    <property name="cursor" stdset="0">
-     <cursorShape>ArrowCursor</cursorShape>
-    </property>
-    <property name="gridStyle">
-     <enum>Qt::DashLine</enum>
-    </property>
-    <attribute name="horizontalHeaderDefaultSectionSize">
-     <number>126</number>
-    </attribute>
-    <column>
-     <property name="text">
-      <string>书籍类别</string>
-     </property>
-     <property name="font">
-      <font>
-       <family>Agency FB</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>书籍名称</string>
-     </property>
-     <property name="font">
-      <font>
-       <family>Agency FB</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>书籍价格</string>
-     </property>
-     <property name="font">
-      <font>
-       <family>Agency FB</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>近期销量</string>
-     </property>
-     <property name="font">
-      <font>
-       <family>Agency FB</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>购买意向</string>
-     </property>
-     <property name="font">
-      <font>
-       <family>Agency FB</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>购买数量</string>
-     </property>
-     <property name="font">
-      <font>
-       <family>Agency FB</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-    </column>
-   </widget>
    <widget class="QPushButton" name="novel">
     <property name="geometry">
      <rect>
@@ -574,7 +484,7 @@
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
     <property name="text">
-     <string>去购买</string>
+     <string>购买</string>
     </property>
    </widget>
    <widget class="QLabel" name="date_time">
@@ -681,7 +591,6 @@
    <zorder>manual</zorder>
    <zorder>books_for_you</zorder>
    <zorder>books_for_you_pic</zorder>
-   <zorder>tableWidget</zorder>
    <zorder>novel</zorder>
    <zorder>music</zorder>
    <zorder>political</zorder>
@@ -707,7 +616,6 @@
   <tabstop>political</tabstop>
   <tabstop>cooking</tabstop>
   <tabstop>music</tabstop>
-  <tabstop>tableWidget</tabstop>
   <tabstop>books_recommend</tabstop>
   <tabstop>books_on_sale</tabstop>
   <tabstop>books_for_you</tabstop>

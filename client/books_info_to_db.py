@@ -14,11 +14,11 @@ import sqlite3
 
 class df_to_db(object):
     def __init__(self):
-        self.database = "./books_info.db"
-        self.connect = sqlite3.connect(self.database)
-        self.books_info = pd.read_csv("./books_info.csv", header=0, encoding='utf-8')
-        self.books_info.to_sql(self.database, self.connect, if_exists="append",index=False)
-        self.connect.commit()
+        database = "/Users/huyan/PycharmProjects/BMT/BMT/client/books_info.db"
+        connect = sqlite3.connect(database)
+        books_info = pd.read_csv("/Users/huyan/PycharmProjects/BMT/BMT/client/books_info.csv", header=0, encoding='utf-8')
+        books_info.to_sql("database", connect, if_exists="append")
+        connect.commit()
 
 if __name__ == "__main__":
     df_to_db()
