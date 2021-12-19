@@ -83,6 +83,10 @@ class main_window(QMainWindow):
         for i in self.ui.check_list:
             if i.isChecked():
                 books_name = self.ui.table.item(self.ui.check_list.index(i), 2).text()
+                sales_this_week = int(self.ui.table.item(self.ui.check_list.index(i),3).text())+1
+                inventory = int(self.ui.table.item(self.ui.check_list.index(i),5).text())-1
+                self.ui.table.setItem(self.ui.check_list.index(i), 3, QTableWidgetItem(str(sales_this_week)))
+                self.ui.table.setItem(self.ui.check_list.index(i), 5, QTableWidgetItem(str(inventory)))
                 choose_list.append(books_name)
 
         for book in choose_list:
@@ -118,10 +122,10 @@ class main_window(QMainWindow):
             selling_price = data[6]
             connect = sqlite3.connect("./purchase_history.db")
             cursor = connect.cursor()
-            sql = "CREATE TABLE IF NOT EXISTS database([username] TEXT, [books_type] TEXT, [books_name] TEXT, [selling_price] TEXT, [created_time] TEXT)"
+            sql = "CREATE TABLE IF NOT EXISTS database(u TEXT, bt TEXT, bn TEXT, sp TEXT, ct TEXT)"
             cursor.execute(sql)
             cursor = connect.cursor()
-            sql = "INSERT INTO database ([username], [books_type], [books_name], [selling_price], [created_time]) VALUES （?,?,?,?,?)"
+            sql = "INSERT INTO database VALUES (?,?,?,?,?)"
             cursor.execute(sql, (username, books_type, books_name, selling_price, created_time,))
             connect.commit()
             connect.close()
