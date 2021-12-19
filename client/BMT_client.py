@@ -83,6 +83,7 @@ class main_window(QMainWindow):
         for i in self.ui.check_list:
             if i.isChecked():
                 books_name = self.ui.table.item(self.ui.check_list.index(i), 2).text()
+                # 在主页窗口实现实时更新销量和库存
                 sales_this_week = int(self.ui.table.item(self.ui.check_list.index(i),3).text())+1
                 inventory = int(self.ui.table.item(self.ui.check_list.index(i),5).text())-1
                 self.ui.table.setItem(self.ui.check_list.index(i), 3, QTableWidgetItem(str(sales_this_week)))
