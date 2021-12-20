@@ -11,6 +11,7 @@ from ui import log_in as li
 from ui import register_success as rs
 from ui import register_to as rt
 from ui import shop_windows as sw
+from ui import purchase_history as ph
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -79,6 +80,19 @@ class main_window(QMainWindow):
         self.ui.books_on_sale.clicked.connect(lambda :self.type_change("books_on_sale"))
         self.ui.search.clicked.connect(self.search)
         self.ui.buy.clicked.connect(self.buy)
+        # self.ui.purchase_history.clicked.connect(self.purchase_history_show)
+
+    # def purchase_history_show(self):
+    #     #购买记录
+    #     self.purchase_history_show_window =
+    #     self.purchase_history_db = "./purchase_history.db"
+    #     connect = sqlite3.connect(self.purchase_history_db)
+    #     cursor = connect.cursor()
+    #     sql = 'SELECT * FROM database WHERE [u]=?'
+    #     result = cursor.execute(sql, (self.ui.welcome_log_in.text()))
+    #     ph_data = result.fetchall()
+    #     connect.commit()
+    #     connect.close()
 
 
     def buy(self):
@@ -108,7 +122,7 @@ class main_window(QMainWindow):
                 i.setCheckState(Qt.Unchecked)
             for book in choose_list:
                 # 在原先基础之上减去购买的一本
-                connect = sqlite3.connect(self.database)
+                connect = sqlite3.connect(self.books_info_db)
                 cursor = connect.cursor()
                 sql = 'SELECT * FROM database WHERE [books_name]=?'
                 result = cursor.execute(sql, (book,))
@@ -155,7 +169,7 @@ class main_window(QMainWindow):
             self.ui.table.setRowCount(0)
             self.ui.table.clearContents()
             self.ui.check_list = []
-            connect = sqlite3.connect(self.database)
+            connect = sqlite3.connect(self.books_info_db)
             cursor = connect.cursor()
             sql = 'SELECT * FROM database WHERE [books_name] LIKE "%s" ORDER BY [sales_this_week] DESC' % ('%%%s%%' % search_input)
             result = cursor.execute(sql)
@@ -188,14 +202,14 @@ class main_window(QMainWindow):
         self.ui.table.setColumnCount(6)  # 设置列数
         self.ui.table.setHorizontalHeaderLabels(["购买意向", "书籍类别", "书籍名称", "近期销量", "售价", "库存"])  # 设置首行
         # self.ui.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 表格中的内容设置为无法修改
-        self.database = './books_info.db'
+        self.books_info_db = './books_info.db'
         data = self.read_table()
         for books_info in data:
             self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
 
     def read_table(self, pic_type="total", books_type="total"):
         """读取数据库中的所有元素"""
-        connect = sqlite3.connect(self.database)
+        connect = sqlite3.connect(self.books_info_db)
         cursor = connect.cursor()
         if books_type == "total":
             sql = 'SELECT * FROM database ORDER BY [sales_this_week] DESC'
@@ -281,7 +295,7 @@ class log_in(QMainWindow):
 
         # 连接管理员账户
         self.admin_win = AdminWindow()
-        self.database = Database("./account_info.db")
+        self.account_info_db = Database("./account_info.db")
         # 返回主页
         self.ui.back.clicked.connect(self.back)
         # 密码显示按钮
@@ -301,7 +315,7 @@ class log_in(QMainWindow):
         username = self.ui.account.text()
         password = self.ui.password.text()
         # 在数据库中查找数据
-        data = self.database.find_password_by_username(username)
+        data = self.account_info_db.find_password_by_username(username)
         # 如果两个输入框都不为空
         if username and password:
             if data:
@@ -376,7 +390,7 @@ class register_to(QMainWindow):
         super(register_to, self).__init__(parent)
         self.ui = rt.Ui_BMT_client_register_to()
         self.ui.setupUi(self)
-        self.database = Database('./account_info.db')
+        self.account_info_db = Database('./account_info.db')
         # 返回主页
         self.ui.back.clicked.connect(self.back)
         # 已有帐号前往登录
@@ -418,7 +432,7 @@ class register_to(QMainWindow):
             QMessageBox.information(self, 'Error', '密码为空',
                                     QMessageBox.Yes)
         # 如果用户名已经存在
-        elif self.database.is_has(username):
+        elif self.account_info_db.is_has(username):
             QMessageBox.information(self, '错误',
                                     '用户已经存在',
                                     QMessageBox.Yes)
@@ -437,7 +451,7 @@ class register_to(QMainWindow):
                     return
                 else:
                     # 将用户信息写入数据库
-                    self.database.insert_table(username, password)
+                    self.account_info_db.insert_table(username, password)
                     QMessageBox.information(self, '成功',
                                             '注册成功'.format(username),
                                             QMessageBox.Yes)
@@ -491,11 +505,52 @@ class register_success(QMainWindow):
         self.close()
         self.log_in.show()
 
+
 class shop_window(QMainWindow):
     def __init__(self, parent=None):
         super(shop_window, self).__init__(parent)
         self.ui = sw.Ui_BMT_client_main_windows()
         self.ui.setupUi(self)
+
+
+
+
+
+
+    #     # 添加表格对象
+    #     self.ui.table = QTableWidget(self)
+    #     # 保存所有的选择框
+    #     self.ui.check_list = []
+    #     self.ui.table.setFixedWidth(720)  # 设置宽度
+    #     self.ui.table.setFixedHeight(500)  # 设置高度
+    #     self.ui.table.move(40, 180)  # 设置显示的位置
+    #     self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 自动填充
+    #     self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)  # 自动填充
+    #     self.ui.table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 只能选择整行
+    #     self.ui.table.setColumnCount(6)  # 设置列数
+    #     self.ui.table.setHorizontalHeaderLabels(["导出意向", "用户姓名", "书籍类别", "书籍名称", "成交价格", "交易时间"])  # 设置首行
+    #     for purchase_history_info in ph_data:
+    #         self.add_row(purchase_history_info[0], purchase_history_info[1], purchase_history_info[2], purchase_history_info[3], purchase_history_info[4])
+    #
+    # def add_row(self, user_name, books_type, books_name, current_selling_price, time):
+    #     """在表格上添加一行新的内容"""
+    #     row = self.ui.table.rowCount()  # 表格的行数
+    #     self.ui.table.setRowCount(row + 1)  # 添加一行表格
+    #     self.ui.table.setItem(row, 1, QTableWidgetItem(str(user_name)))# 将书籍信息插入到表格中
+    #     self.ui.table.setItem(row, 2, QTableWidgetItem(str(books_type)))
+    #     self.ui.table.setItem(row, 3, QTableWidgetItem(str(books_name)))
+    #     self.ui.table.setItem(row, 4, QTableWidgetItem(str(current_selling_price)))
+    #     self.ui.table.setItem(row, 5, QTableWidgetItem(str(time)))
+    #
+    #     # 设置复选框
+    #     widget = QWidget()
+    #     check = QCheckBox()
+    #     self.ui.check_list.append(check)  # 添加到复选框列表中
+    #     check_lay = QHBoxLayout()
+    #     check_lay.addWidget(check)
+    #     check_lay.setAlignment(Qt.AlignCenter)
+    #     widget.setLayout(check_lay)
+    #     self.ui.table.setCellWidget(row, 0, widget)
 
 
 if __name__ == "__main__":
