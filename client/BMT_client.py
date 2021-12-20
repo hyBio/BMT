@@ -64,72 +64,88 @@ class main_window(QMainWindow):
         # 展示表格
         self.show_table()
         # 根据书籍类型切换输出的信息
-        self.ui.novel.clicked.connect(lambda :self.type_change("小说"))
-        self.ui.education.clicked.connect(lambda :self.type_change("教材"))
-        self.ui.political.clicked.connect(lambda :self.type_change("军政"))
-        self.ui.cooking.clicked.connect(lambda :self.type_change("烹饪"))
-        self.ui.music.clicked.connect(lambda :self.type_change("音乐"))
-        self.ui.history.clicked.connect(lambda :self.type_change("历史"))
-        self.ui.biography.clicked.connect(lambda :self.type_change("传记"))
-        self.ui.architecture.clicked.connect(lambda :self.type_change("建筑"))
-        self.ui.comics.clicked.connect(lambda :self.type_change("漫画"))
-        self.ui.psychology.clicked.connect(lambda :self.type_change("心理"))
-        self.ui.total_books.clicked.connect(lambda :self.type_change("total"))
+        self.ui.novel.clicked.connect(lambda :self.type_change("total","小说"))
+        self.ui.education.clicked.connect(lambda :self.type_change("total","教材"))
+        self.ui.political.clicked.connect(lambda :self.type_change("total","军政"))
+        self.ui.cooking.clicked.connect(lambda :self.type_change("total","烹饪"))
+        self.ui.music.clicked.connect(lambda :self.type_change("total","音乐"))
+        self.ui.history.clicked.connect(lambda :self.type_change("total","历史"))
+        self.ui.biography.clicked.connect(lambda :self.type_change("total","传记"))
+        self.ui.architecture.clicked.connect(lambda :self.type_change("total","建筑"))
+        self.ui.comics.clicked.connect(lambda :self.type_change("total","漫画"))
+        self.ui.psychology.clicked.connect(lambda :self.type_change("total","心理"))
+        self.ui.total_books.clicked.connect(lambda :self.type_change("total","total"))
+        self.ui.books_recommend.clicked.connect(lambda :self.type_change("books_recommend"))
+        self.ui.books_on_sale.clicked.connect(lambda :self.type_change("books_on_sale"))
         self.ui.search.clicked.connect(self.search)
         self.ui.buy.clicked.connect(self.buy)
 
+
     def buy(self):
-        choose_list = []
+        books_number = 0
+        total_price = 0
+        # 确认购买
         for i in self.ui.check_list:
             if i.isChecked():
-                books_name = self.ui.table.item(self.ui.check_list.index(i), 2).text()
-                # 在主页窗口实现实时更新销量和库存
-                sales_this_week = int(self.ui.table.item(self.ui.check_list.index(i),3).text())+1
-                inventory = int(self.ui.table.item(self.ui.check_list.index(i),5).text())-1
-                self.ui.table.setItem(self.ui.check_list.index(i), 3, QTableWidgetItem(str(sales_this_week)))
-                self.ui.table.setItem(self.ui.check_list.index(i), 5, QTableWidgetItem(str(inventory)))
-                choose_list.append(books_name)
+                books_number += 1
+                total_price += float(self.ui.table.item(self.ui.check_list.index(i), 4).text())
+        rec_code = QMessageBox.question(self, "询问", "您选购了{}本书，共计{}元，确认购买？".format(books_number,total_price), QMessageBox.Yes | QMessageBox.No)
+        # 65536代表选择否
+        if rec_code == 65536:
+            pass
+        else:
+            choose_list = []
+            for i in self.ui.check_list:
+                if i.isChecked():
+                    books_name = self.ui.table.item(self.ui.check_list.index(i), 2).text()
+                    # 在主页窗口实现实时更新销量和库存
+                    sales_this_week = int(self.ui.table.item(self.ui.check_list.index(i),3).text())+1
+                    inventory = int(self.ui.table.item(self.ui.check_list.index(i),5).text())-1
+                    self.ui.table.setItem(self.ui.check_list.index(i), 3, QTableWidgetItem(str(sales_this_week)))
+                    self.ui.table.setItem(self.ui.check_list.index(i), 5, QTableWidgetItem(str(inventory)))
+                    choose_list.append(books_name)
+                #取消复选框
+                i.setCheckState(Qt.Unchecked)
+            for book in choose_list:
+                # 在原先基础之上减去购买的一本
+                connect = sqlite3.connect(self.database)
+                cursor = connect.cursor()
+                sql = 'SELECT * FROM database WHERE [books_name]=?'
+                result = cursor.execute(sql, (book,))
+                data = result.fetchall()[0]
+                sales_this_week = data[7]
+                cumulative_sales = data[8]
+                inventory = data[9]
+                sql = 'UPDATE database SET [inventory]="%s" WHERE [books_name]="%s"' % (inventory-1, book)
+                cursor.execute(sql)
+                sql = 'UPDATE database SET [sales_this_week]="%s" WHERE [books_name]="%s"' % (sales_this_week+1, book)
+                cursor.execute(sql)
+                sql = 'UPDATE database SET [cumulative_sales]="%s" WHERE [books_name]="%s"' % (cumulative_sales+1, book)
+                cursor.execute(sql)
+                connect.commit()
+                connect.close()
 
-        for book in choose_list:
-            # 在原先基础之上减去购买的一本
-            connect = sqlite3.connect(self.database)
-            cursor = connect.cursor()
-            sql = 'SELECT * FROM database WHERE [books_name]=?'
-            result = cursor.execute(sql, (book,))
-            data = result.fetchall()[0]
-            sales_this_week = data[7]
-            cumulative_sales = data[8]
-            inventory = data[9]
-            sql = 'UPDATE database SET [inventory]="%s" WHERE [books_name]="%s"' % (inventory-1, book)
-            cursor.execute(sql)
-            sql = 'UPDATE database SET [sales_this_week]="%s" WHERE [books_name]="%s"' % (sales_this_week+1, book)
-            cursor.execute(sql)
-            sql = 'UPDATE database SET [cumulative_sales]="%s" WHERE [books_name]="%s"' % (cumulative_sales+1, book)
-            cursor.execute(sql)
-            connect.commit()
-            connect.close()
-
-            # 构造购买记录（销售记录）数据库
-            date = time.localtime()
-            created_time = "{}-{}-{}-{}:{}:{}".format(date.tm_year,
-                                                      date.tm_mon,
-                                                      date.tm_mday,
-                                                      date.tm_hour,
-                                                      date.tm_min,
-                                                      date.tm_sec)
-            username = self.ui.welcome_log_in.text()
-            books_type = data[2]
-            books_name = data[3]
-            selling_price = data[6]
-            connect = sqlite3.connect("./purchase_history.db")
-            cursor = connect.cursor()
-            sql = "CREATE TABLE IF NOT EXISTS database(u TEXT, bt TEXT, bn TEXT, sp TEXT, ct TEXT)"
-            cursor.execute(sql)
-            cursor = connect.cursor()
-            sql = "INSERT INTO database VALUES (?,?,?,?,?)"
-            cursor.execute(sql, (username, books_type, books_name, selling_price, created_time,))
-            connect.commit()
-            connect.close()
+                # 构造购买记录（销售记录）数据库
+                date = time.localtime()
+                created_time = "{}-{}-{}-{}:{}:{}".format(date.tm_year,
+                                                          date.tm_mon,
+                                                          date.tm_mday,
+                                                          date.tm_hour,
+                                                          date.tm_min,
+                                                          date.tm_sec)
+                username = self.ui.welcome_log_in.text()
+                books_type = data[2]
+                books_name = data[3]
+                selling_price = data[6]
+                connect = sqlite3.connect("./purchase_history.db")
+                cursor = connect.cursor()
+                sql = "CREATE TABLE IF NOT EXISTS database(u TEXT, bt TEXT, bn TEXT, sp TEXT, ct TEXT)"
+                cursor.execute(sql)
+                cursor = connect.cursor()
+                sql = "INSERT INTO database VALUES (?,?,?,?,?)"
+                cursor.execute(sql, (username, books_type, books_name, selling_price, created_time,))
+                connect.commit()
+                connect.close()
 
     def search(self):
         search_input = self.ui.search_input.text()
@@ -138,6 +154,7 @@ class main_window(QMainWindow):
         else:
             self.ui.table.setRowCount(0)
             self.ui.table.clearContents()
+            self.ui.check_list = []
             connect = sqlite3.connect(self.database)
             cursor = connect.cursor()
             sql = 'SELECT * FROM database WHERE [books_name] LIKE "%s" ORDER BY [sales_this_week] DESC' % ('%%%s%%' % search_input)
@@ -148,10 +165,11 @@ class main_window(QMainWindow):
             for books_info in data:
                 self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
 
-    def type_change(self, books_type):
+    def type_change(self, pic_type="total", books_type="total"):
         self.ui.table.setRowCount(0)
         self.ui.table.clearContents()
-        data = self.read_table("total", books_type)
+        self.ui.check_list = []
+        data = self.read_table(pic_type, books_type)
         for books_info in data:
             self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
 
