@@ -63,7 +63,7 @@ class Ui_BMT_client_main_windows(object):
         self.client_name.setText(_translate("BMT_client_main_windows", "<html><head/><body><p><span style=\" font-size:28pt; font-style:italic;\">BMT</span></p></body></html>"))
         self.client_logo.setText(_translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/logo/resource/BMT_128.ico\"/></p></body></html>"))
         self.output.setText(_translate("BMT_client_main_windows", "导出"))
-import resource_rc
+from client import resource_rc
 
 
 if __name__ == "__main__":
