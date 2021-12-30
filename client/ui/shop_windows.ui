@@ -63,7 +63,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QTableWidget" name="tableWidget">
+   <widget class="QTableWidget" name="table">
     <property name="geometry">
      <rect>
       <x>49</x>
@@ -440,7 +440,7 @@
      <string>到</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="refresh">
     <property name="geometry">
      <rect>
       <x>840</x>
@@ -490,7 +490,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="time_to_2">
+   <widget class="QPushButton" name="pricechange">
     <property name="geometry">
      <rect>
       <x>500</x>
@@ -509,32 +509,10 @@
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
     <property name="text">
-     <string>设为特价书籍</string>
+     <string>修改售价</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="time_from_2">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>940</y>
-      <width>150</width>
-      <height>30</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Agency FB</family>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-    <property name="cursor">
-     <cursorShape>PointingHandCursor</cursorShape>
-    </property>
-    <property name="text">
-     <string>设为首页推荐</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="time_to_3">
+   <widget class="QPushButton" name="Increase_inventory">
     <property name="geometry">
      <rect>
       <x>660</x>
@@ -567,7 +545,7 @@
     </property>
     <property name="font">
      <font>
-      <family>Agency FB</family>
+      <family>Segoe UI</family>
       <pointsize>10</pointsize>
      </font>
     </property>
@@ -612,7 +590,7 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>tableWidget</tabstop>
+  <tabstop>table</tabstop>
  </tabstops>
  <resources>
   <include location="../resource.qrc"/>

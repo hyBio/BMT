@@ -14,6 +14,8 @@ from ui import register_success as rs
 from ui import register_to as rt
 from ui import shop_windows as sw
 from ui import purchase_history as ph
+from ui import storehouse_windows as shw
+from ui import date_choose as dc
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -143,14 +145,15 @@ class main_window(QMainWindow):
                 username = self.ui.welcome_log_in.text()
                 books_type = data[2]
                 books_name = data[3]
+                purchase_price = data[4]
                 selling_price = data[6]
                 connect = sqlite3.connect("./purchase_history.db")
                 cursor = connect.cursor()
-                sql = "CREATE TABLE IF NOT EXISTS database(u TEXT, bt TEXT, bn TEXT, sp TEXT, ct TEXT)"
+                sql = "CREATE TABLE IF NOT EXISTS database(u TEXT, bt TEXT, pp TEXT,bn TEXT, sp TEXT, ct TEXT)"
                 cursor.execute(sql)
                 cursor = connect.cursor()
-                sql = "INSERT INTO database VALUES (?,?,?,?,?)"
-                cursor.execute(sql, (username, books_type, books_name, selling_price, created_time,))
+                sql = "INSERT INTO database VALUES (?,?,?,?,?,?)"
+                cursor.execute(sql, (username, books_type, books_name, purchase_price, selling_price, created_time,))
                 connect.commit()
                 connect.close()
 
@@ -328,6 +331,9 @@ class log_in(QMainWindow):
                     elif self.username == 'shop':
                         self.shop_window = shop_window()
                         self.shop_window.show()
+                    elif self.username == 'storehouse':
+                        self.storehouse_window = storehouse_window()
+                        self.storehouse_window.show()
                     # 如果是普通用户，则进入个人主页，并取消登录按钮的功能
                     else:
                         self.main_window.ui.welcome_log_in.setText(_translate("BMT_client_main_windows", "{}".format(self.username)))
@@ -504,7 +510,70 @@ class shop_window(QMainWindow):
         super(shop_window, self).__init__(parent)
         self.ui = sw.Ui_BMT_client_main_windows()
         self.ui.setupUi(self)
+        self.show_table()
 
+        # 显示时间
+        timer = QTimer(self)
+        timer.timeout.connect(self.show_current_time)
+        timer.start()
+
+        self.ui.time_from.clicked.connect(self.time_from)
+        self.ui.time_to.clicked.connect(self.time_to)
+
+    def time_from(self):
+        self.date_choose = date_choose()
+        self.date_choose.show()
+
+    def time_to(self):
+        self.date_choose = date_choose()
+        self.date_choose.show()
+
+    def show_table(self):
+        # 显示销售情况
+        self.ui.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 表格中的内容设置为无法修改
+        self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 自动填充
+        self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)  # 自动填充
+        self.purchase_history_db = "./purchase_history.db"
+        connect = sqlite3.connect(self.purchase_history_db)
+        cursor = connect.cursor()
+        sql = 'SELECT * FROM database'
+        result = cursor.execute(sql)
+        self.ph_data = result.fetchall()
+        connect.commit()
+        connect.close()
+        self.ph_data = pd.DataFrame(self.ph_data)
+        self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price inventory".split(sep=" ")
+        self.ph_data[["purchase_price","current_selling_price"]] = self.ph_data[["purchase_price","current_selling_price"]].astype(float)
+        self.ph_data["profit"] = self.ph_data["current_selling_price"]-self.ph_data["purchase_price"]
+
+        self.ph_data["sales_number"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("count")
+        self.ph_data["sales_money"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("sum")
+        self.ph_data["sales_profit"] = self.ph_data.groupby(["books_name"])["profit"].transform("sum")
+        # 保留两位小数
+        self.ph_data["sales_profit"] = self.ph_data["sales_profit"].round(2)
+        # 排序
+        self.ph_data = self.ph_data.sort_values(["sales_number","sales_profit"],ascending=False)
+        # 去重
+        self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
+
+        for books_info in self.ph_data.itertuples():
+            self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
+
+    def add_row(self, books_type, books_name, sales_number, sales_money, sales_profit):
+        """在表格上添加一行新的内容"""
+        row = self.ui.table.rowCount()  # 表格的行数
+        self.ui.table.setRowCount(row + 1)  # 添加一行表格
+        self.ui.table.setItem(row, 0, QTableWidgetItem(str(books_type)))# 将书籍信息插入到表格中
+        self.ui.table.setItem(row, 1, QTableWidgetItem(str(books_name)))
+        self.ui.table.setItem(row, 2, QTableWidgetItem(str(sales_number)))
+        self.ui.table.setItem(row, 3, QTableWidgetItem(str(sales_money)))
+        self.ui.table.setItem(row, 4, QTableWidgetItem(str(sales_profit)))
+
+    def show_current_time(self):
+        datetime = QDateTime.currentDateTime()
+        text = datetime.toString("yyyy年MM月dd日 hh:mm:ss ddd")
+        self.ui.date_time.setText(text)
+        self.ui.date_time.setFont(QFont("Roman times", 12, QFont.Bold))
 
 
 class purchase_history(QMainWindow):
@@ -536,36 +605,66 @@ class purchase_history(QMainWindow):
         self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 自动填充
         self.ui.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)  # 自动填充
         self.ui.table.setSelectionBehavior(QAbstractItemView.SelectRows)  # 只能选择整行
-        self.ui.table.setColumnCount(6)  # 设置列数
-        self.ui.table.setHorizontalHeaderLabels(["导出意向", "用户姓名", "书籍类别", "书籍名称", "成交价格", "交易时间"])  # 设置首行
+        self.ui.table.setColumnCount(5)  # 设置列数
+        self.ui.table.setHorizontalHeaderLabels([ "用户姓名", "书籍类别", "书籍名称", "成交价格", "交易时间"])  # 设置首行
         for purchase_history_info in self.ph_data:
-            self.add_row(purchase_history_info[0], purchase_history_info[1], purchase_history_info[2], purchase_history_info[3], purchase_history_info[4])
+            self.add_row(purchase_history_info[0], purchase_history_info[1], purchase_history_info[2], purchase_history_info[4], purchase_history_info[5])
 
     def add_row(self, user_name, books_type, books_name, current_selling_price, time):
         """在表格上添加一行新的内容"""
         row = self.ui.table.rowCount()  # 表格的行数
         self.ui.table.setRowCount(row + 1)  # 添加一行表格
-        self.ui.table.setItem(row, 1, QTableWidgetItem(str(user_name)))# 将书籍信息插入到表格中
-        self.ui.table.setItem(row, 2, QTableWidgetItem(str(books_type)))
-        self.ui.table.setItem(row, 3, QTableWidgetItem(str(books_name)))
-        self.ui.table.setItem(row, 4, QTableWidgetItem(str(current_selling_price)))
-        self.ui.table.setItem(row, 5, QTableWidgetItem(str(time)))
-
-        # 设置复选框
-        widget = QWidget()
-        check = QCheckBox()
-        self.ui.check_list.append(check)  # 添加到复选框列表中
-        check_lay = QHBoxLayout()
-        check_lay.addWidget(check)
-        check_lay.setAlignment(Qt.AlignCenter)
-        widget.setLayout(check_lay)
-        self.ui.table.setCellWidget(row, 0, widget)
+        self.ui.table.setItem(row, 0, QTableWidgetItem(str(user_name)))# 将书籍信息插入到表格中
+        self.ui.table.setItem(row, 1, QTableWidgetItem(str(books_type)))
+        self.ui.table.setItem(row, 2, QTableWidgetItem(str(books_name)))
+        self.ui.table.setItem(row, 3, QTableWidgetItem(str(current_selling_price)))
+        self.ui.table.setItem(row, 4, QTableWidgetItem(str(time)))
 
     def output(self):
         file = pd.DataFrame(self.ph_data)
         file.columns = ["顾客姓名","书籍类型","书籍名称","购入价格","交易时间"]
-        file_save_path = QFileDialog.getSaveFileName(self, "选择保存路径", os.getcwd(), "txt files (*.txt);;all files(*.*)")
-        file.to_csv(file_save_path[0],sep="\t",index=False)
+        # 尝试保存，忽略由于用户取消抛出的FileNotFoundError
+        try:
+            file_save_path = QFileDialog.getSaveFileName(self, "选择保存路径", os.getcwd(), "txt files (*.txt);;all files(*.*)")
+            file.to_csv(file_save_path[0],sep="\t",index=False)
+        except FileNotFoundError:
+            pass
+
+
+class storehouse_window(QMainWindow):
+    def __init__(self, parent=None):
+        super(storehouse_window, self).__init__(parent)
+        self.ui = shw.Ui_storehouse_window()
+        self.ui.setupUi(self)
+
+        self.storehouse_db = "./books_info.db"
+        connect = sqlite3.connect(self.storehouse_db)
+        cursor = connect.cursor()
+        sql = 'SELECT [books_type],[books_name],[purchase_price],[current_selling_price],[inventory] FROM database ORDER BY [inventory] DESC'
+        result = cursor.execute(sql)
+        self.sh_data = result.fetchall()
+        connect.commit()
+        connect.close()
+
+        for books_info in self.sh_data:
+            self.add_row(books_info[0], books_info[1], books_info[2], books_info[3], books_info[4])
+
+    def add_row(self, books_type, books_name, purchase_price, current_selling_price, inventory):
+        """在表格上添加一行新的内容"""
+        row = self.ui.table.rowCount()  # 表格的行数
+        self.ui.table.setRowCount(row + 1)  # 添加一行表格
+        self.ui.table.setItem(row, 0, QTableWidgetItem(str(books_type)))# 将书籍信息插入到表格中
+        self.ui.table.setItem(row, 1, QTableWidgetItem(str(books_name)))
+        self.ui.table.setItem(row, 2, QTableWidgetItem(str(purchase_price)))
+        self.ui.table.setItem(row, 3, QTableWidgetItem(str(current_selling_price)))
+        self.ui.table.setItem(row, 4, QTableWidgetItem(str(inventory)))
+
+class date_choose(QWidget):
+    def __init__(self, parent=None):
+        super(date_choose, self).__init__(parent)
+        self.ui = dc.Ui_Form()
+        self.ui.setupUi(self)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
