@@ -14,8 +14,12 @@ from ui import register_success as rs
 from ui import register_to as rt
 from ui import shop_windows as sw
 from ui import purchase_history as ph
-from ui import storehouse_windows as shw
 from ui import date_choose as dc
+from ui import storehouse_windows as shw
+from ui import storehouse_shop_window as shsw
+from ui import storehouse_input_main_window as shim
+from ui import storehouse_output_main_window as shom
+from ui import storehouse_pricechange_main_window as shpm
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -56,11 +60,26 @@ class main_window(QMainWindow):
         self.ui.welcome_register.clicked.connect(self.register_to.show)
         self.ui.log_out.clicked.connect(self.log_out)
 
-        # 设置定时器定时更换书籍图片
+        # 设置定时器定时更换书籍图片及购买记录
         self.time1 = QTimer(self)
         self.time1.timeout.connect(self.print_books_pic)
+        self.time1.timeout.connect(self.buy_log_change)
         self.time1.start(1000)
         self.n = 0
+        self.m = 0
+        self.purchase_history_db = "./purchase_history.db"
+        connect = sqlite3.connect(self.purchase_history_db)
+        cursor = connect.cursor()
+        sql = 'SELECT * FROM database'
+        result = cursor.execute(sql)
+        self.ph_data_total = result.fetchall()
+        connect.commit()
+        connect.close()
+        self.ph_data = pd.DataFrame(self.ph_data_total)
+        self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
+        # 乱序处理
+        self.ph_data =self.ph_data.sample(frac=1).reset_index(drop=True)
+
 
         # 联系客服
         self.ui.call_for_help.clicked.connect(self.call_for_help)
@@ -255,18 +274,38 @@ class main_window(QMainWindow):
         self.ui.date_time.setFont(QFont("Roman times", 12, QFont.Bold))
 
     def print_books_pic(self):
-        self.n += 1
         books_recommend = self.read_table("books_recommend")
-        books_recommend_pic = books_recommend[self.n-1][3]
+        books_recommend_pic = books_recommend[self.n][3]
         books_on_sale = self.read_table("books_on_sale")
-        books_on_sale_pic = books_on_sale[self.n-1][3]
+        books_on_sale_pic = books_on_sale[self.n][3]
         books_for_you = self.read_table("books_for_you")
-        books_for_you_pic = books_for_you[self.n-1][3]
-        if self.n >= 9:
-            self.n = 0
+        books_for_you_pic = books_for_you[self.n][3]
         self.ui.books_recommend_pic.setText(_translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(books_recommend_pic)))
         self.ui.books_on_sale_pic.setText(_translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(books_on_sale_pic)))
         self.ui.books_for_you_pic.setText(_translate("BMT_client_main_windows", "<html><head/><body><p><img src=\":/books/resource/books_picture/{}.jpg\"/></p></body></html>".format(books_for_you_pic)))
+        self.n += 1
+        if self.n >= 9:
+            self.n = 0
+
+
+    def buy_log_change(self):
+        self.ui.buy_log.setText(_translate("BMT_client_main_windows", "{}刚刚购买了《{}》，表示很开心".format(self.ph_data.loc[self.m,"user_name"][0]+"****",self.ph_data.loc[self.m,"books_name"])))
+        self.m +=1
+        if self.m >= len(self.ph_data):
+            self.m = 0
+            self.purchase_history_db = "./purchase_history.db"
+            connect = sqlite3.connect(self.purchase_history_db)
+            cursor = connect.cursor()
+            sql = 'SELECT * FROM database'
+            result = cursor.execute(sql)
+            self.ph_data_total = result.fetchall()
+            connect.commit()
+            connect.close()
+            self.ph_data = pd.DataFrame(self.ph_data_total)
+            self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
+            # 乱序处理
+            self.ph_data =self.ph_data.sample(frac=1).reset_index(drop=True)
+
 
     def log_out(self):
         self.ui.welcome_log_in.setText(_translate("BMT_client_main_windows", "您好，请登录"))
@@ -330,9 +369,11 @@ class log_in(QMainWindow):
                     # 如果是书店用户，则进入书店主页
                     elif self.username == 'shop':
                         self.shop_window = shop_window()
+                        self.main_window.close()
                         self.shop_window.show()
                     elif self.username == 'storehouse':
                         self.storehouse_window = storehouse_window()
+                        self.main_window.close()
                         self.storehouse_window.show()
                     # 如果是普通用户，则进入个人主页，并取消登录按钮的功能
                     else:
@@ -521,6 +562,68 @@ class shop_window(QMainWindow):
         self.ui.time_to.clicked.connect(self.time_to)
         self.ui.refresh.clicked.connect(self.refresh)
 
+        # 返回主页
+        self.ui.back.clicked.connect(self.back)
+
+        # 联系客服
+        self.ui.call_for_help.clicked.connect(self.call_for_help)
+
+        # 更新销售记录
+        self.time1 = QTimer(self)
+        self.time1.timeout.connect(self.print_numbers)
+        #self.time1.timeout.connect(self.plot_figures)
+        self.time1.start(1000)
+
+    def print_numbers(self):
+        purchase_history_db = "./purchase_history.db"
+        connect = sqlite3.connect(purchase_history_db)
+        cursor = connect.cursor()
+        sql = 'SELECT * FROM database'
+        result = cursor.execute(sql)
+        ph_data_total = result.fetchall()
+        connect.commit()
+        connect.close()
+        ph_data = pd.DataFrame(ph_data_total)
+        ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
+        ph_data[["purchase_price","current_selling_price"]] = ph_data[["purchase_price","current_selling_price"]].astype(float)
+        ph_data["profit"] = ph_data["current_selling_price"]-ph_data["purchase_price"]
+
+        ph_data["sales_number"] = ph_data.groupby(["books_name"])["current_selling_price"].transform("count")
+        ph_data["sales_money"] = ph_data.groupby(["books_name"])["current_selling_price"].transform("sum")
+        ph_data["sales_profit"] = ph_data.groupby(["books_name"])["profit"].transform("sum")
+        # 保留两位小数
+        ph_data["sales_profit"] = ph_data["sales_profit"].round(2)
+        current_date = QDate.currentDate()
+        ph_data = ph_data.loc[[QDate.fromString(i[0:10],"yyyy-MM-dd") == current_date for i in ph_data.time],:]
+        # 显示销售情况
+        days = 0
+        today_sales = round(sum(ph_data["sales_money"]),2)
+        self.ui.today_sales.setText("今日销售额：{}".format(today_sales))
+        # 房租水电薪水各100，书籍邮费2元1本，税率10%
+        today_pay = round((100+100+100)*(days+1)+2*sum(ph_data.sales_number)+0.1*today_sales,2)
+        self.ui.today_pay.setText("今日支出：{}".format(today_pay))
+        today_profit = round(sum(ph_data["sales_profit"])-today_pay,2)
+        if today_profit < 0:
+            self.ui.today_profit.setStyleSheet("color:red")
+        else:
+            self.ui.today_profit.setStyleSheet("color:green")
+        self.ui.today_profit.setText("今日利润：{}".format(today_profit))
+
+    def call_for_help(self):
+        clipboard = QGuiApplication.clipboard()
+        clipboard.setText("huyan35@mail2.sysu.edu.cn")
+        self.ui.call_for_help.setText("已复制到剪切板")
+        self.time1 = QTimer(self)
+        self.time1.singleShot(1000,self.timer_TimeOut1)
+
+    def timer_TimeOut1(self):
+        self.ui.call_for_help.setText("联系客服(点我复制)")
+
+    def back(self):
+        self.main_window = main_window()
+        self.close()
+        self.main_window.show()
+
     def time_from(self):
         self.date_choose = date_choose("time_from")
         self.date_choose.show()
@@ -560,7 +663,19 @@ class shop_window(QMainWindow):
         self.ph_data = self.ph_data.sort_values(["sales_number","sales_profit"],ascending=False)
         # 去重
         self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
-
+        # 显示销售情况
+        days = QDate.fromString("2021年12月20日","yyyy年MM月dd日").daysTo(QDate.fromString(QDate.currentDate().toString("yyyy年MM月dd日"),"yyyy年MM月dd日"))
+        total_sales = round(sum(self.ph_data["sales_money"]),2)
+        self.ui.total_sales.setText("累计销售额：{}".format(total_sales))
+        # 房租水电薪水各100，书籍邮费2元1本，税率10%
+        total_pay = round((100+100+100)*(days+1)+2*sum(self.ph_data.sales_number)+0.1*total_sales,2)
+        self.ui.total_pay.setText("累计支出：{}".format(total_pay))
+        total_profit = round(sum(self.ph_data["sales_profit"])-total_pay,2)
+        if total_profit < 0:
+            self.ui.total_profit.setStyleSheet("color:red")
+        else:
+            self.ui.total_profit.setStyleSheet("color:green")
+        self.ui.total_profit.setText("累计利润：{}".format(total_profit))
         for books_info in self.ph_data.itertuples():
             self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
 
@@ -575,29 +690,45 @@ class shop_window(QMainWindow):
         self.ui.table.setItem(row, 4, QTableWidgetItem(str(sales_profit)))
 
     def refresh(self):
-        start_time = QDateTime.fromString(self.ui.time_from.text().split(" ")[1],"yyyy年MM月dd日")
-        end_time = QDateTime.fromString(self.ui.time_to.text().split(" ")[1],"yyyy年MM月dd日")
-        self.ph_data = pd.DataFrame(self.ph_data_total)
-        self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
-        self.ph_data = self.ph_data.loc[[QDateTime.fromString(i[0:10], "yyyy-MM-dd") >= start_time for i in self.ph_data.time] and [QDateTime.fromString(i[0:10], "yyyy-MM-dd") <= end_time for i in self.ph_data.time],:]
-        if len(self.ph_data) == 0:
-            QMessageBox.information(self, '警告', '未找到相关记录，请核对日期后重新查找！', QMessageBox.Yes)
-        else:
-            self.ui.table.setRowCount(0)
-            self.ph_data[["purchase_price","current_selling_price"]] = self.ph_data[["purchase_price","current_selling_price"]].astype(float)
-            self.ph_data["profit"] = self.ph_data["current_selling_price"]-self.ph_data["purchase_price"]
-            self.ph_data["sales_number"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("count")
-            self.ph_data["sales_money"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("sum")
-            self.ph_data["sales_profit"] = self.ph_data.groupby(["books_name"])["profit"].transform("sum")
-            # 保留两位小数
-            self.ph_data["sales_profit"] = self.ph_data["sales_profit"].round(2)
-            # 排序
-            self.ph_data = self.ph_data.sort_values(["sales_number","sales_profit"],ascending=False)
-            # 去重
-            self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
-            for books_info in self.ph_data.itertuples():
-                self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
-
+        try:
+            start_time = QDate.fromString(self.ui.time_from.text().split(" ")[1],"yyyy年MM月dd日")
+            end_time = QDate.fromString(self.ui.time_to.text().split(" ")[1],"yyyy年MM月dd日")
+            self.ph_data = pd.DataFrame(self.ph_data_total)
+            self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
+            self.ph_data = self.ph_data.loc[[start_time <= QDate.fromString(i[0:10], "yyyy-MM-dd") >= end_time for i in self.ph_data.time],:]
+            if len(self.ph_data) == 0:
+                QMessageBox.information(self, '提醒', '未找到相关记录，请核对日期后重新查找！', QMessageBox.Yes)
+            else:
+                self.ui.table.setRowCount(0)
+                self.ui.table.clearContents()
+                self.ph_data[["purchase_price","current_selling_price"]] = self.ph_data[["purchase_price","current_selling_price"]].astype(float)
+                self.ph_data["profit"] = self.ph_data["current_selling_price"]-self.ph_data["purchase_price"]
+                self.ph_data["sales_number"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("count")
+                self.ph_data["sales_money"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("sum")
+                self.ph_data["sales_profit"] = self.ph_data.groupby(["books_name"])["profit"].transform("sum")
+                # 保留两位小数
+                self.ph_data["sales_profit"] = self.ph_data["sales_profit"].round(2)
+                # 排序
+                self.ph_data = self.ph_data.sort_values(["sales_number","sales_profit"],ascending=False)
+                # 去重
+                self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
+                for books_info in self.ph_data.itertuples():
+                    self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
+            # 显示销售情况
+            days = start_time.daysTo(end_time)
+            total_sales = round(sum(self.ph_data["sales_money"]),2)
+            self.ui.total_sales.setText("累计销售额：{}".format(total_sales))
+            # 房租水电薪水各100，书籍邮费2元1本，税率10%
+            total_pay = round((100+100+100)*(days+1)+2*sum(self.ph_data.sales_number)+0.1*total_sales,2)
+            self.ui.total_pay.setText("累计支出：{}".format(total_pay))
+            total_profit = round(sum(self.ph_data["sales_profit"])-total_pay,2)
+            if total_profit < 0:
+                self.ui.total_profit.setStyleSheet("color:red")
+            else:
+                self.ui.total_profit.setStyleSheet("color:green")
+            self.ui.total_profit.setText("累计利润：{}".format(total_profit))
+        except IndexError:
+            pass
 
     def show_current_time(self):
         datetime = QDateTime.currentDateTime()
@@ -680,18 +811,31 @@ class storehouse_window(QMainWindow):
         super(storehouse_window, self).__init__(parent)
         self.ui = shw.Ui_storehouse_window()
         self.ui.setupUi(self)
+        self.refreshing()
+        # 更新
+        self.ui.refresh.clicked.connect(self.refreshing)
+        self.ui.refresh.clicked.connect(self.shopping)
 
-        self.storehouse_db = "./books_info.db"
-        connect = sqlite3.connect(self.storehouse_db)
-        cursor = connect.cursor()
-        sql = 'SELECT [books_type],[books_name],[purchase_price],[current_selling_price],[inventory] FROM database ORDER BY [inventory] DESC'
-        result = cursor.execute(sql)
-        self.sh_data = result.fetchall()
-        connect.commit()
-        connect.close()
+        # 填写入库单
+        self.input_main_window = storehouse_input_main_window()
+        self.ui.input.clicked.connect(self.input_main_window.show)
 
-        for books_info in self.sh_data:
-            self.add_row(books_info[0], books_info[1], books_info[2], books_info[3], books_info[4])
+        # 填写出库单
+        self.storehouse_output_main_window = storehouse_output_main_window()
+        self.ui.output.clicked.connect(self.storehouse_output_main_window.show)
+
+        # 生成采购单
+        self.shop_window = storehouse_shop_window()
+        self.ui.shop.clicked.connect(self.shop_window.show)
+
+        # 进价更新
+        self.pricechange_main_window=storehouse_pricechange_main_window()
+        self.ui.pricechange.clicked.connect(self.pricechange_main_window.show)
+
+        # 回到主页
+        self.main_window = main_window()
+        self.ui.back.clicked.connect(self.main_window.show)
+        self.ui.back.clicked.connect(self.close)
 
     def add_row(self, books_type, books_name, purchase_price, current_selling_price, inventory):
         """在表格上添加一行新的内容"""
@@ -702,6 +846,364 @@ class storehouse_window(QMainWindow):
         self.ui.table.setItem(row, 2, QTableWidgetItem(str(purchase_price)))
         self.ui.table.setItem(row, 3, QTableWidgetItem(str(current_selling_price)))
         self.ui.table.setItem(row, 4, QTableWidgetItem(str(inventory)))
+
+    def refreshing(self):  # 更新书目信息
+        self.ui.table.setRowCount(0)
+        self.ui.table.clearContents()
+        self.storehouse_db = "./books_info.db"
+        connect = sqlite3.connect(self.storehouse_db)
+        cursor = connect.cursor()
+        sql = 'SELECT [books_type],[books_name],[purchase_price],[current_selling_price],[inventory] FROM database ORDER BY [inventory]'
+        result = cursor.execute(sql)
+        self.sh_data = result.fetchall()
+        connect.commit()
+        connect.close()
+        for books_info in self.sh_data:
+            self.add_row(books_info[0], books_info[1], books_info[2], books_info[3], books_info[4])
+        if self.sh_data[0][4] < 100:
+            QMessageBox.information(self, '提醒', '有书目不足100本，需要重新采购。')
+
+    def shopping(self):  # 生成采购单
+        # 链接数据库
+        connect = sqlite3.connect('books_info.db')
+        cursor = connect.cursor()
+        # 写入books_type,books_name,purchase_price,current_selling_price,inventory
+        sql = 'SELECT * FROM database WHERE inventory < 100'
+        result = cursor.execute(sql)
+        data = result.fetchall()  # 生成data
+        connect.commit()
+        connect.close()
+        if len(data) == 0:
+            QMessageBox.information(self, '提醒', '暂无少于100本的书目，无需采购')
+        else:
+            pass
+
+class storehouse_input_main_window(QMainWindow):
+    def __init__(self, parent=None):
+        super(storehouse_input_main_window, self).__init__(parent)
+        self.ui = shim.Ui_input_main_window()
+        self.ui.setupUi(self)
+
+        # 定义入库信息
+        self.ui.confirm.clicked.connect(self.inbound)
+        self.ui.confirm.clicked.connect(self.showMsg)
+
+        # 定义取消按钮
+        self.ui.cancel.clicked.connect(self.close)
+
+    def inbound(self):  # 定义入库信息
+        # 管理员写入信息
+        book_type_input = self.ui.book_type_input.text()
+        book_name_input = self.ui.book_name_input.text()
+        purchase_price_input = self.ui.purchase_price_input.text()
+        number_input = self.ui.number_input.text()
+        # 连接数据库
+        connect = sqlite3.connect('books_info.db')
+        cursor = connect.cursor()
+        # 查询是否已有此本书
+        sql = '''SELECT * FROM database WHERE books_name = ?'''
+        result = cursor.execute(sql, (book_name_input,))
+        data = result.fetchall()
+        # 有这本书，加上入库的数目
+        if len(data) > 0:
+            sql = '''UPDATE database SET inventory = inventory+? WHERE books_name = ? '''
+            cursor.execute(sql, (number_input, book_name_input,))
+        # 没有这本书名，生成新书条目
+        else:
+            sql = 'select * from database'
+            result = cursor.execute(sql)
+            data = result.fetchall()  # 生成data
+            # 写入数据
+            book_number = data[-1][1] + 1
+            book_type = book_type_input
+            book_name = book_name_input
+            purchase_price = int(purchase_price_input)
+            lowest_price = purchase_price * 1.1
+            current_selling_price = purchase_price * 2.85
+            sales_this_week = 0
+            cumulative_sales = 0
+            inventory = int(number_input)
+            cursor.execute('''INSERT INTO database(books_number,books_type,books_name,
+            purchase_price,lowest_price,current_selling_price,
+            sales_this_week,cumulative_sales,inventory)VALUES (?,?,?,?,?,?,?,?,?)''', (book_number, book_type, book_name,
+                                                                                       purchase_price, lowest_price, current_selling_price,
+                                                                                       sales_this_week, cumulative_sales, inventory,))
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def showMsg(self):  # 设置弹窗
+        # 管理员写入信息
+        book_name_input = self.ui.book_name_input.text()
+        number_input = self.ui.number_input.text()
+        # 连接数据库
+        connect = sqlite3.connect('books_info.db')
+        cursor = connect.cursor()
+        # 查询加入书目信息
+        sql = '''SELECT * FROM database WHERE books_name = ?'''
+        result = cursor.execute(sql, (book_name_input,))
+        data = result.fetchall()
+        QMessageBox.information(self, '提醒',"{}({}){}本已加入仓库。仓库共有{}{}本。".format(data[0][3],data[0][2],number_input,data[0][3],data[0][9]))
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+        #清空输入框
+        self.ui.book_name_input.clear()
+        self.ui.number_input.clear()
+        self.ui.book_type_input.clear()
+        self.ui.purchase_price_input.clear()
+
+
+class storehouse_output_main_window(QMainWindow):
+    def __init__(self,parent=None):
+        super(storehouse_output_main_window, self).__init__(parent)
+        self.ui = shom.Ui_output_main_window()
+        self.ui.setupUi(self)
+
+        # 定义书籍类别信息
+        # 连接数据库
+        connect = sqlite3.connect('books_info.db')
+        cursor = connect.cursor()
+        # 查询书目类别信息
+        sql = '''SELECT * FROM database'''
+        result = cursor.execute(sql)
+        data = result.fetchall()
+        types = []  # 书目类别
+        for i in range(len(data)):
+            if data[i][2] not in types:
+                types.append(data[i][2])
+        # 下拉框写入书籍类别
+        self.ui.book_type.addItem('请选择书籍类别')
+        for i in types:
+            self.ui.book_type.addItems([i])
+        self.ui.book_type.activated[str].connect(self.show_books_name)
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+        # 定义出库
+        self.ui.confirm.clicked.connect(self.outbound)
+        self.ui.confirm.clicked.connect(self.showMsg)
+        # 定义取消按钮
+        self.ui.cancel.clicked.connect(self.close)
+
+    def show_books_name(self, book_type):  # 下拉框写入书名
+        self.ui.book_name.clear()
+        # 定义书籍类别信息
+        # 连接数据库
+        connect = sqlite3.connect('books_info.db')
+        cursor = connect.cursor()
+        # 查询书目类别信息
+        sql = '''SELECT * FROM database'''
+        result = cursor.execute(sql)
+        data = result.fetchall()
+        types = []  # 书目类别
+        for i in range(len(data)):
+            if data[i][2] not in types:
+                types.append(data[i][2])
+        # 根据书目类别写入书名
+        for i in range(len(types)):
+            if book_type == types[i]:
+                sql = '''SELECT * FROM database WHERE books_type=?'''
+                result = cursor.execute(sql, (types[i],))
+                data = result.fetchall()
+                names = []
+                for j in range(len(data)):
+                    if data[j][3] not in names:
+                        names.append(data[j][3])
+                for h in names:
+                    self.ui.book_name.addItem(h)
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def outbound(self):  # 定义出库信息
+        # 定义输入内容
+        book_name_input = self.ui.book_name.currentText()
+        number_input = self.ui.number_input.text()
+        # 连接数据库
+        connect = sqlite3.connect('books_info.db')
+        cursor = connect.cursor()
+        # 减去库存
+        sql = '''UPDATE database SET inventory = inventory-? WHERE books_name = ? '''
+        cursor.execute(sql, (number_input, book_name_input,))
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def showMsg(self):
+        book_name_input = self.ui.book_name.currentText()
+        number_input = self.ui.number_input.text()
+
+        # 连接数据库
+        connect=sqlite3.connect('books_info.db')
+        cursor=connect.cursor()
+
+        #提取数据信息
+        sql='''SELECT * FROM database WHERE books_name=?'''
+        result=cursor.execute(sql,(book_name_input,))
+        books_info=result.fetchall()
+        QMessageBox.information(self,'仓库',"{}{}本已出库。仓库共有{}{}本。".format(books_info[0][3],
+                                                                   number_input,
+                                                                   books_info[0][3],
+                                                                   books_info[0][9]))
+
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+        # 清除数据框中的内容
+        self.ui.number_input.clear()
+        self.ui.book_name.clear()
+
+
+class storehouse_shop_window(QMainWindow):
+    def __init__(self,parent=None):
+        super(storehouse_shop_window, self).__init__(parent)
+        self.ui = shsw.Ui_shop_window()
+        self.ui.setupUi(self)
+        # 导出书单
+        self.ui.generate.clicked.connect(self.output_csv)
+        # 定义生成按钮为返回仓库
+        self.ui.generate.clicked.connect(self.close)
+        # 填写采购单内容
+        # 连接数据库
+        connect = sqlite3.connect('books_info.db')
+        cursor = connect.cursor()
+        # 查询小于100本的书目信息
+        sql = '''SELECT * FROM database WHERE inventory < 100'''
+        result = cursor.execute(sql)
+        self.ph_data = result.fetchall()
+        for i in range(len(self.ph_data)):
+            row = self.ui.tableWidget.rowCount()  # 表格的行数
+            self.ui.tableWidget.setRowCount(row + 1)  # 添加一行表格
+            self.ui.tableWidget.setItem(i, 0, QTableWidgetItem(str(self.ph_data[i][2])))
+            self.ui.tableWidget.setItem(i, 1, QTableWidgetItem(str(self.ph_data[i][3])))
+            # 默认采购1000本
+            self.ui.tableWidget.setItem(i, 2, QTableWidgetItem(str(1000)))
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def output_csv(self):
+        # 定义导出采购单
+        d = {}
+        for i in range(self.ui.tableWidget.columnCount()):
+            l = []
+            for j in range(self.ui.tableWidget.rowCount()):
+                it = self.ui.tableWidget.item(j, i)
+                l.append(it.text() if it is not None else "")
+            h_item = self.ui.tableWidget.horizontalHeaderItem(i)
+            n_column = str(i) if h_item is None else h_item.text()
+            d[n_column] = l
+        file = pd.DataFrame(data=d)
+        if len(file) > 0:
+            # 尝试保存，忽略由于用户取消抛出的FileNotFoundError
+            try:
+                file_save_path = QFileDialog.getSaveFileName(self, "选择保存路径", os.getcwd(), "txt files (*.txt);;all files(*.*)")
+                file.to_csv(file_save_path[0],sep="\t",index=False)
+            except FileNotFoundError:
+                pass
+        else:
+            pass
+
+
+class storehouse_pricechange_main_window(QMainWindow):
+    def __init__(self,parent=None):
+        super(storehouse_pricechange_main_window,self).__init__(parent)
+        self.ui=shpm.Ui_price_change()
+        self.ui.setupUi(self)
+        # 定义按钮功能连接
+        self.ui.original_price.clicked.connect(self.original_Msg)
+        self.ui.confirm.clicked.connect(self.pricechange)
+        self.ui.cancel.clicked.connect(self.back)
+        # 连接数据库
+        connect=sqlite3.connect('books_info.db')
+        cursor=connect.cursor()
+        # 提取数据库信息
+        sql='''SELECT * FROM database'''
+        result=cursor.execute(sql)
+        books_info=result.fetchall()
+        # 类别下拉框输入信息
+        books_type=[]
+        for i in range(len(books_info)):
+            if books_info[i][2] not in books_type:
+                books_type.append(books_info[i][2])
+        self.ui.book_type.addItem('请选择书籍类别')
+        self.ui.book_type.addItems(books_type)
+        # 类别下拉框连接到书名下拉框
+        self.ui.book_type.activated[str].connect(self.show_books_name)
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def show_books_name(self,book_type):
+        self.ui.book_name.clear()
+        # 连接数据库
+        connect=sqlite3.connect('books_info.db')
+        cursor=connect.cursor()
+        # 提取数据库信息
+        sql='''SELECT * FROM database'''
+        result=cursor.execute(sql)
+        books_info=result.fetchall()
+        # 书名下拉框输入信息
+        books_type=[]
+        for i in range(len(books_info)):
+            if books_info[i][2] not in books_type:
+                books_type.append(books_info[i][2])
+        for i in range(len(books_type)):
+            if book_type==books_type[i]:
+                sql='''SELECT * FROM database WHERE books_type=?'''
+                result=cursor.execute(sql,(books_type[i],))
+                books_info1=result.fetchall()
+                books_name = []
+                for j in range(len(books_info1)):
+                    if books_info1[j][3] not in books_name:
+                        books_name.append(books_info1[j][3])
+                self.ui.book_name.addItems(books_name)
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def original_Msg(self):
+        # 连接数据库
+        connect=sqlite3.connect('books_info.db')
+        cursor=connect.cursor()
+        # 读取数据库信息
+        book_name = self.ui.book_name.currentText()
+        sql='''SELECT * FROM database WHERE books_name=?'''
+        result=cursor.execute(sql,(book_name,))
+        books_info2=result.fetchall()
+        for i in range(len(books_info2)):
+            original_price=books_info2[i][4]
+        # 弹窗提示当前进价
+        QMessageBox.information(self,'当前进价','{}当前进价为{}。'.format(book_name,original_price))
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def pricechange(self):
+        book_name=self.ui.book_name.currentText()
+        now_price=self.ui.price_change_input.text()
+        now_price=int(now_price)
+        lowest_price=now_price*1.1
+        current_selling_price=now_price*2.85
+        # 连接数据库
+        connect=sqlite3.connect('books_info.db')
+        cursor=connect.cursor()
+        # 更新数据库
+        sql='''UPDATE database SET purchase_price=?,lowest_price=?,current_selling_price=? WHERE books_name=?'''
+        cursor.execute(sql,(now_price,lowest_price,current_selling_price,book_name))
+        QMessageBox.information(self,'进价更新','{}进价更新为{}。'.format(book_name,now_price))
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def back(self):
+        self.main_window=main_window()
+        self.close()
+        self.main_window.show()
 
 
 if __name__ == "__main__":

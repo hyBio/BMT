@@ -92,7 +92,7 @@
    <widget class="QPushButton" name="output">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>640</x>
       <y>70</y>
       <width>100</width>
       <height>40</height>
@@ -116,7 +116,7 @@
    <widget class="QPushButton" name="input">
     <property name="geometry">
      <rect>
-      <x>560</x>
+      <x>520</x>
       <y>70</y>
       <width>100</width>
       <height>40</height>
@@ -140,7 +140,7 @@
    <widget class="QPushButton" name="refresh">
     <property name="geometry">
      <rect>
-      <x>300</x>
+      <x>260</x>
       <y>70</y>
       <width>100</width>
       <height>40</height>
@@ -211,7 +211,7 @@
    <widget class="QPushButton" name="shop">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>380</x>
       <y>70</y>
       <width>121</width>
       <height>40</height>
@@ -235,9 +235,9 @@
    <widget class="QPushButton" name="pricechange">
     <property name="geometry">
      <rect>
-      <x>800</x>
+      <x>760</x>
       <y>70</y>
-      <width>150</width>
+      <width>101</width>
       <height>41</height>
      </rect>
     </property>
@@ -264,6 +264,25 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/logo/resource/BMT_128.ico&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="back">
+    <property name="geometry">
+     <rect>
+      <x>880</x>
+      <y>70</y>
+      <width>71</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>黑体</family>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>返回</string>
+    </property>
+   </widget>
    <zorder>client_logo</zorder>
    <zorder>call_for_help</zorder>
    <zorder>client_name</zorder>
@@ -273,6 +292,7 @@
    <zorder>table</zorder>
    <zorder>shop</zorder>
    <zorder>pricechange</zorder>
+   <zorder>back</zorder>
   </widget>
  </widget>
  <tabstops>

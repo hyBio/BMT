@@ -514,7 +514,7 @@
      <rect>
       <x>20</x>
       <y>490</y>
-      <width>461</width>
+      <width>530</width>
       <height>30</height>
      </rect>
     </property>
@@ -528,7 +528,7 @@
      <string/>
     </property>
     <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QPushButton" name="purchase_history">
