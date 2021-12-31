@@ -158,8 +158,8 @@ class main_window(QMainWindow):
                 connect.close()
 
     def search(self):
-        search_input = self.ui.search_input.placeholderText()
-        if search_input != None:
+        search_input = self.ui.search_input.text()
+        if search_input == None:
             pass
         else:
             self.ui.table.setRowCount(0)
@@ -167,7 +167,7 @@ class main_window(QMainWindow):
             self.ui.check_list = []
             connect = sqlite3.connect(self.books_info_db)
             cursor = connect.cursor()
-            sql = 'SELECT * FROM database WHERE [books_name] OR [books_type] LIKE "%s" ORDER BY [sales_this_week] DESC' % ('%%%s%%' % search_input)
+            sql = 'SELECT * FROM database WHERE [books_name] LIKE "%s" OR [books_type] LIKE "%s" ORDER BY [sales_this_week] DESC' % ('%%%s%%' % search_input,search_input)
             result = cursor.execute(sql)
             data = result.fetchall()
             connect.commit()
@@ -521,12 +521,16 @@ class shop_window(QMainWindow):
         self.ui.time_to.clicked.connect(self.time_to)
 
     def time_from(self):
-        self.date_choose = date_choose()
+        self.date_choose = date_choose("time_from")
         self.date_choose.show()
+        self.date_choose.ui.pushButton.clicked.connect(lambda :self.ui.time_from.setText(self.date_choose.date_return("从")))
+        self.date_choose.ui.pushButton.clicked.connect(self.date_choose.close)
 
     def time_to(self):
-        self.date_choose = date_choose()
+        self.date_choose = date_choose("time_to")
         self.date_choose.show()
+        self.date_choose.ui.pushButton.clicked.connect(lambda :self.ui.time_to.setText(self.date_choose.date_return("到")))
+        self.date_choose.ui.pushButton.clicked.connect(self.date_choose.close)
 
     def show_table(self):
         # 显示销售情况
@@ -631,6 +635,20 @@ class purchase_history(QMainWindow):
             pass
 
 
+class date_choose(QWidget):
+    def __init__(self, action):
+        self.action = action
+        super(date_choose, self).__init__()
+        self.ui = dc.Ui_Form()
+        self.ui.setupUi(self)
+        self.ui.pushButton.clicked.connect(self.date_return)
+
+    def date_return(self,from_or_to):
+        self.date = self.ui.calendarWidget.selectedDate()
+        self.date = self.date.toString("yyyy年MM月dd日")
+        return ("{} {}".format(from_or_to,self.date))
+
+
 class storehouse_window(QMainWindow):
     def __init__(self, parent=None):
         super(storehouse_window, self).__init__(parent)
@@ -658,12 +676,6 @@ class storehouse_window(QMainWindow):
         self.ui.table.setItem(row, 2, QTableWidgetItem(str(purchase_price)))
         self.ui.table.setItem(row, 3, QTableWidgetItem(str(current_selling_price)))
         self.ui.table.setItem(row, 4, QTableWidgetItem(str(inventory)))
-
-class date_choose(QWidget):
-    def __init__(self, parent=None):
-        super(date_choose, self).__init__(parent)
-        self.ui = dc.Ui_Form()
-        self.ui.setupUi(self)
 
 
 if __name__ == "__main__":
