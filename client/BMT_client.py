@@ -519,6 +519,7 @@ class shop_window(QMainWindow):
 
         self.ui.time_from.clicked.connect(self.time_from)
         self.ui.time_to.clicked.connect(self.time_to)
+        self.ui.refresh.clicked.connect(self.refresh)
 
     def time_from(self):
         self.date_choose = date_choose("time_from")
@@ -542,11 +543,11 @@ class shop_window(QMainWindow):
         cursor = connect.cursor()
         sql = 'SELECT * FROM database'
         result = cursor.execute(sql)
-        self.ph_data = result.fetchall()
+        self.ph_data_total = result.fetchall()
         connect.commit()
         connect.close()
-        self.ph_data = pd.DataFrame(self.ph_data)
-        self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price inventory".split(sep=" ")
+        self.ph_data = pd.DataFrame(self.ph_data_total)
+        self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
         self.ph_data[["purchase_price","current_selling_price"]] = self.ph_data[["purchase_price","current_selling_price"]].astype(float)
         self.ph_data["profit"] = self.ph_data["current_selling_price"]-self.ph_data["purchase_price"]
 
@@ -572,6 +573,31 @@ class shop_window(QMainWindow):
         self.ui.table.setItem(row, 2, QTableWidgetItem(str(sales_number)))
         self.ui.table.setItem(row, 3, QTableWidgetItem(str(sales_money)))
         self.ui.table.setItem(row, 4, QTableWidgetItem(str(sales_profit)))
+
+    def refresh(self):
+        start_time = QDateTime.fromString(self.ui.time_from.text().split(" ")[1],"yyyy年MM月dd日")
+        end_time = QDateTime.fromString(self.ui.time_to.text().split(" ")[1],"yyyy年MM月dd日")
+        self.ph_data = pd.DataFrame(self.ph_data_total)
+        self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
+        self.ph_data = self.ph_data.loc[[QDateTime.fromString(i[0:10], "yyyy-MM-dd") >= start_time for i in self.ph_data.time] and [QDateTime.fromString(i[0:10], "yyyy-MM-dd") <= end_time for i in self.ph_data.time],:]
+        if len(self.ph_data) == 0:
+            QMessageBox.information(self, '警告', '未找到相关记录，请核对日期后重新查找！', QMessageBox.Yes)
+        else:
+            self.ui.table.setRowCount(0)
+            self.ph_data[["purchase_price","current_selling_price"]] = self.ph_data[["purchase_price","current_selling_price"]].astype(float)
+            self.ph_data["profit"] = self.ph_data["current_selling_price"]-self.ph_data["purchase_price"]
+            self.ph_data["sales_number"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("count")
+            self.ph_data["sales_money"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("sum")
+            self.ph_data["sales_profit"] = self.ph_data.groupby(["books_name"])["profit"].transform("sum")
+            # 保留两位小数
+            self.ph_data["sales_profit"] = self.ph_data["sales_profit"].round(2)
+            # 排序
+            self.ph_data = self.ph_data.sort_values(["sales_number","sales_profit"],ascending=False)
+            # 去重
+            self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
+            for books_info in self.ph_data.itertuples():
+                self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
+
 
     def show_current_time(self):
         datetime = QDateTime.currentDateTime()
@@ -643,10 +669,10 @@ class date_choose(QWidget):
         self.ui.setupUi(self)
         self.ui.pushButton.clicked.connect(self.date_return)
 
-    def date_return(self,from_or_to):
+    def date_return(self, from_or_to):
         self.date = self.ui.calendarWidget.selectedDate()
         self.date = self.date.toString("yyyy年MM月dd日")
-        return ("{} {}".format(from_or_to,self.date))
+        return ("{} {}".format(from_or_to, self.date))
 
 
 class storehouse_window(QMainWindow):
