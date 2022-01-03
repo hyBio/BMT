@@ -594,7 +594,7 @@ class shop_window(QMainWindow):
         # 保留两位小数
         ph_data["sales_profit"] = ph_data["sales_profit"].round(2)
         current_date = QDate.currentDate()
-        ph_data = ph_data.loc[[QDate.fromString(i[0:10],"yyyy-MM-dd") == current_date for i in ph_data.time],:]
+        ph_data = ph_data.loc[[QDate.fromString('-'.join(i.split('-')[0:3]),"yyyy-M-d") == current_date for i in ph_data.time],:]
         # 显示销售情况
         days = 0
         today_sales = round(sum(ph_data["sales_money"]),2)
@@ -695,7 +695,7 @@ class shop_window(QMainWindow):
             end_time = QDate.fromString(self.ui.time_to.text().split(" ")[1],"yyyy年MM月dd日")
             self.ph_data = pd.DataFrame(self.ph_data_total)
             self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
-            self.ph_data = self.ph_data.loc[[start_time <= QDate.fromString(i[0:10], "yyyy-MM-dd") <= end_time for i in self.ph_data.time],:]
+            self.ph_data = self.ph_data.loc[[start_time <= QDate.fromString('-'.join(i.split("-")[0:3]), "yyyy-M-d") <= end_time for i in self.ph_data.time],:]
             if len(self.ph_data) == 0:
                 QMessageBox.information(self, '提醒', '未找到相关记录，请核对日期后重新查找！', QMessageBox.Yes)
             else:
