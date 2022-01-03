@@ -695,7 +695,7 @@ class shop_window(QMainWindow):
             end_time = QDate.fromString(self.ui.time_to.text().split(" ")[1],"yyyy年MM月dd日")
             self.ph_data = pd.DataFrame(self.ph_data_total)
             self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
-            self.ph_data = self.ph_data.loc[[start_time <= QDate.fromString(i[0:10], "yyyy-MM-dd") >= end_time for i in self.ph_data.time],:]
+            self.ph_data = self.ph_data.loc[[start_time <= QDate.fromString(i[0:10], "yyyy-MM-dd") <= end_time for i in self.ph_data.time],:]
             if len(self.ph_data) == 0:
                 QMessageBox.information(self, '提醒', '未找到相关记录，请核对日期后重新查找！', QMessageBox.Yes)
             else:
@@ -714,19 +714,22 @@ class shop_window(QMainWindow):
                 self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
                 for books_info in self.ph_data.itertuples():
                     self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
-            # 显示销售情况
-            days = start_time.daysTo(end_time)
-            total_sales = round(sum(self.ph_data["sales_money"]),2)
-            self.ui.total_sales.setText("累计销售额：{}".format(total_sales))
-            # 房租水电薪水各100，书籍邮费2元1本，税率10%
-            total_pay = round((100+100+100)*(days+1)+2*sum(self.ph_data.sales_number)+0.1*total_sales,2)
-            self.ui.total_pay.setText("累计支出：{}".format(total_pay))
-            total_profit = round(sum(self.ph_data["sales_profit"])-total_pay,2)
-            if total_profit < 0:
-                self.ui.total_profit.setStyleSheet("color:red")
-            else:
-                self.ui.total_profit.setStyleSheet("color:green")
-            self.ui.total_profit.setText("累计利润：{}".format(total_profit))
+            try:
+                # 显示销售情况
+                days = start_time.daysTo(end_time)
+                total_sales = round(sum(self.ph_data["sales_money"]),2)
+                self.ui.total_sales.setText("累计销售额：{}".format(total_sales))
+                # 房租水电薪水各100，书籍邮费2元1本，税率10%
+                total_pay = round((100+100+100)*(days+1)+2*sum(self.ph_data.sales_number)+0.1*total_sales,2)
+                self.ui.total_pay.setText("累计支出：{}".format(total_pay))
+                total_profit = round(sum(self.ph_data["sales_profit"])-total_pay,2)
+                if total_profit < 0:
+                    self.ui.total_profit.setStyleSheet("color:red")
+                else:
+                    self.ui.total_profit.setStyleSheet("color:green")
+                self.ui.total_profit.setText("累计利润：{}".format(total_profit))
+            except KeyError:
+                pass
         except IndexError:
             pass
 
