@@ -29,8 +29,10 @@ from Admin import AdminWindow
 import sys
 import time
 import sqlite3
+from matplotlib import pyplot as plt
 
-
+plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+plt.rcParams['figure.dpi'] = 250
 _translate = QtCore.QCoreApplication.translate
 class main_window(QMainWindow):
     def __init__(self, parent=None):
@@ -79,7 +81,6 @@ class main_window(QMainWindow):
         self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
         # 乱序处理
         self.ph_data =self.ph_data.sample(frac=1).reset_index(drop=True)
-
 
         # 联系客服
         self.ui.call_for_help.clicked.connect(self.call_for_help)
@@ -286,7 +287,6 @@ class main_window(QMainWindow):
         self.n += 1
         if self.n >= 9:
             self.n = 0
-
 
     def buy_log_change(self):
         self.ui.buy_log.setText(_translate("BMT_client_main_windows", "{}刚刚购买了《{}》，表示很开心".format(self.ph_data.loc[self.m,"user_name"][0]+"****",self.ph_data.loc[self.m,"books_name"])))
@@ -568,17 +568,17 @@ class shop_window(QMainWindow):
         # 联系客服
         self.ui.call_for_help.clicked.connect(self.call_for_help)
 
-        # 更新销售记录
+        # 更新销售记录和图片
+        self.print_numbers()
         self.time1 = QTimer(self)
         self.time1.timeout.connect(self.print_numbers)
-        #self.time1.timeout.connect(self.plot_figures)
         self.time1.start(1000)
 
         # 增加库存
         self.ui.increase_inventory.clicked.connect(self.increase_inventory)
 
     def increase_inventory(self):
-        rec_code = QMessageBox.question(self, "询问", "确认采购？",QMessageBox.Yes | QMessageBox.No)
+        rec_code = QMessageBox.question(self, "询问", "确认采购？", QMessageBox.Yes | QMessageBox.No)
         # 65536代表选择否
         if rec_code == 65536:
             pass
@@ -586,20 +586,21 @@ class shop_window(QMainWindow):
             books_info_db = './books_info.db'
             connect = sqlite3.connect(books_info_db)
             cursor = connect.cursor()
-            with open(os.getcwd()+"\\采购清单.txt",'r',encoding='utf-8') as f:
+            with open(os.getcwd()+"/采购清单.txt",'r',encoding='utf-8') as f:
                 lines = f.readlines()[1:]# 跳过行首
-                for row in lines[0].strip('\n'):
-                    increase_books_info = row.split('\t')
-                    print(increase_books_info)
-                    sql = 'SELECT inventory from database WHERE [books_name]==?'
-                    result = cursor.execute(sql, (increase_books_info[1]))
-                    data = result.fetchall()
+                for row in lines:
+                    increase_books_info = row.strip('\n').split('\t')
+                    books_name = increase_books_info[1]
+                    inventory = int(increase_books_info[2])
+                    sql = 'SELECT inventory FROM database WHERE [books_name]==?'
+                    result = cursor.execute(sql, (books_name,))
+                    data = result.fetchall()[0][0]
                     sql = 'UPDATE database SET inventory ==? WHERE [books_name]==?'
-                    cursor.execute(sql, (data+increase_books_info[2],increase_books_info[1]))
-                connect.commit()
-                connect.close()
+                    inventory +=data
+                    cursor.execute(sql, (inventory, books_name,))
+            connect.commit()
+            connect.close()
             QMessageBox.information(self, "提示", "采购成功", QMessageBox.Yes)
-
 
     def print_numbers(self):
         purchase_history_db = "./purchase_history.db"
@@ -635,6 +636,25 @@ class shop_window(QMainWindow):
         else:
             self.ui.today_profit.setStyleSheet("color:green")
         self.ui.today_profit.setText("今日利润：{}".format(today_profit))
+        # 绘制图片今日销售额
+        plt.figure(figsize=(1.2,1.2))
+        plot_data = ph_data.groupby(["books_type"])["sales_money"].agg(sum)
+        plt.pie(plot_data.values,
+                labels = plot_data.index,
+                shadow = False)
+        plt.title('今日销售额')
+        plt.savefig('today_sales_money.png')
+        plt.close()
+        self.ui.today_sales_plot.setPixmap(QPixmap('today_sales_money.png'))
+        # 绘制图片今日销售额
+        plt.figure(figsize=(1.2,1.2))
+        plt.pie([100,100,100,2*sum(ph_data.sales_number),round(0.1*today_sales,2)],
+                labels = ['房租','水电','薪水','快递费','商品税'],
+                shadow = False)
+        plt.title('今日支出')
+        plt.savefig('today_pay_plot.png')
+        plt.close()
+        self.ui.today_pay_plot.setPixmap(QPixmap('today_pay_plot.png'))
 
     def call_for_help(self):
         clipboard = QGuiApplication.clipboard()
@@ -691,7 +711,7 @@ class shop_window(QMainWindow):
         # 去重
         self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
         # 显示销售情况
-        days = QDate.fromString("2021年12月20日","yyyy年MM月dd日").daysTo(QDate.fromString(QDate.currentDate().toString("yyyy年MM月dd日"),"yyyy年MM月dd日"))
+        days = QDate.fromString("2021年12月30日","yyyy年MM月dd日").daysTo(QDate.fromString(QDate.currentDate().toString("yyyy年MM月dd日"),"yyyy年MM月dd日"))
         total_sales = round(sum(self.ph_data["sales_money"]),2)
         self.ui.total_sales.setText("累计销售额：{}".format(total_sales))
         # 房租水电薪水各100，书籍邮费2元1本，税率10%
@@ -1065,27 +1085,27 @@ class storehouse_output_main_window(QMainWindow):
     def showMsg(self):
         book_name_input = self.ui.book_name.currentText()
         number_input = self.ui.number_input.text()
+        if book_name_input and number_input:
+            # 连接数据库
+            connect=sqlite3.connect('books_info.db')
+            cursor=connect.cursor()
 
-        # 连接数据库
-        connect=sqlite3.connect('books_info.db')
-        cursor=connect.cursor()
+            #提取数据信息
+            sql='''SELECT * FROM database WHERE books_name=?'''
+            result=cursor.execute(sql,(book_name_input,))
+            books_info=result.fetchall()
+            QMessageBox.information(self,'仓库',"{}{}本已出库。仓库共有{}{}本。".format(books_info[0][3],
+                                                                       number_input,
+                                                                       books_info[0][3],
+                                                                       books_info[0][9]))
 
-        #提取数据信息
-        sql='''SELECT * FROM database WHERE books_name=?'''
-        result=cursor.execute(sql,(book_name_input,))
-        books_info=result.fetchall()
-        QMessageBox.information(self,'仓库',"{}{}本已出库。仓库共有{}{}本。".format(books_info[0][3],
-                                                                   number_input,
-                                                                   books_info[0][3],
-                                                                   books_info[0][9]))
+            # 断开数据库
+            connect.commit()
+            connect.close()
 
-        # 断开数据库
-        connect.commit()
-        connect.close()
-
-        # 清除数据框中的内容
-        self.ui.number_input.clear()
-        self.ui.book_name.clear()
+            # 清除数据框中的内容
+            self.ui.number_input.clear()
+            self.ui.book_name.clear()
 
 
 class storehouse_shop_window(QMainWindow):
