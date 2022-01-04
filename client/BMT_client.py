@@ -574,6 +574,33 @@ class shop_window(QMainWindow):
         #self.time1.timeout.connect(self.plot_figures)
         self.time1.start(1000)
 
+        # 增加库存
+        self.ui.increase_inventory.clicked.connect(self.increase_inventory)
+
+    def increase_inventory(self):
+        rec_code = QMessageBox.question(self, "询问", "确认采购？",QMessageBox.Yes | QMessageBox.No)
+        # 65536代表选择否
+        if rec_code == 65536:
+            pass
+        else:
+            books_info_db = './books_info.db'
+            connect = sqlite3.connect(books_info_db)
+            cursor = connect.cursor()
+            with open(os.getcwd()+"\\采购清单.txt",'r',encoding='utf-8') as f:
+                lines = f.readlines()[1:]# 跳过行首
+                for row in lines[0].strip('\n'):
+                    increase_books_info = row.split('\t')
+                    print(increase_books_info)
+                    sql = 'SELECT inventory from database WHERE [books_name]==?'
+                    result = cursor.execute(sql, (increase_books_info[1]))
+                    data = result.fetchall()
+                    sql = 'UPDATE database SET inventory ==? WHERE [books_name]==?'
+                    cursor.execute(sql, (data+increase_books_info[2],increase_books_info[1]))
+                connect.commit()
+                connect.close()
+            QMessageBox.information(self, "提示", "采购成功", QMessageBox.Yes)
+
+
     def print_numbers(self):
         purchase_history_db = "./purchase_history.db"
         connect = sqlite3.connect(purchase_history_db)
@@ -789,7 +816,7 @@ class purchase_history(QMainWindow):
         file.columns = ["顾客姓名","书籍类型","书籍名称","购入价格","交易时间"]
         # 尝试保存，忽略由于用户取消抛出的FileNotFoundError
         try:
-            file_save_path = QFileDialog.getSaveFileName(self, "选择保存路径", os.getcwd(), "txt files (*.txt);;all files(*.*)")
+            file_save_path = QFileDialog.getSaveFileName(self, "选择保存路径", os.getcwd()+"\\购买历史.txt", "txt files (*.txt);;all files(*.*)")
             file.to_csv(file_save_path[0],sep="\t",index=False)
         except FileNotFoundError:
             pass
@@ -1104,7 +1131,7 @@ class storehouse_shop_window(QMainWindow):
         if len(file) > 0:
             # 尝试保存，忽略由于用户取消抛出的FileNotFoundError
             try:
-                file_save_path = QFileDialog.getSaveFileName(self, "选择保存路径", os.getcwd(), "txt files (*.txt);;all files(*.*)")
+                file_save_path = QFileDialog.getSaveFileName(self, "选择保存路径", os.getcwd()+'\\采购清单.txt', "txt files (*.txt);;all files(*.*)")
                 file.to_csv(file_save_path[0],sep="\t",index=False)
             except FileNotFoundError:
                 pass
@@ -1120,7 +1147,7 @@ class storehouse_pricechange_main_window(QMainWindow):
         # 定义按钮功能连接
         self.ui.original_price.clicked.connect(self.original_Msg)
         self.ui.confirm.clicked.connect(self.pricechange)
-        self.ui.cancel.clicked.connect(self.back)
+        self.ui.cancel.clicked.connect(self.close)
         # 连接数据库
         connect=sqlite3.connect('books_info.db')
         cursor=connect.cursor()
@@ -1189,24 +1216,22 @@ class storehouse_pricechange_main_window(QMainWindow):
     def pricechange(self):
         book_name=self.ui.book_name.currentText()
         now_price=self.ui.price_change_input.text()
-        now_price=int(now_price)
-        lowest_price=now_price*1.1
-        current_selling_price=now_price*2.85
-        # 连接数据库
-        connect=sqlite3.connect('books_info.db')
-        cursor=connect.cursor()
-        # 更新数据库
-        sql='''UPDATE database SET purchase_price=?,lowest_price=?,current_selling_price=? WHERE books_name=?'''
-        cursor.execute(sql,(now_price,lowest_price,current_selling_price,book_name))
-        QMessageBox.information(self,'进价更新','{}进价更新为{}。'.format(book_name,now_price))
-        # 断开数据库
-        connect.commit()
-        connect.close()
-
-    def back(self):
-        self.main_window=main_window()
-        self.close()
-        self.main_window.show()
+        try:
+            now_price=round(float(now_price),2)
+            lowest_price=now_price*1.1
+            current_selling_price=now_price*2.85
+            # 连接数据库
+            connect=sqlite3.connect('books_info.db')
+            cursor=connect.cursor()
+            # 更新数据库
+            sql='''UPDATE database SET purchase_price=?,lowest_price=?,current_selling_price=? WHERE books_name=?'''
+            cursor.execute(sql,(now_price,lowest_price,current_selling_price,book_name))
+            QMessageBox.information(self,'进价更新','{}进价更新为{}。'.format(book_name,now_price))
+            # 断开数据库
+            connect.commit()
+            connect.close()
+        except:
+            QMessageBox.information(self,'警告','请输入数字！',QMessageBox.Yes)
 
 
 if __name__ == "__main__":

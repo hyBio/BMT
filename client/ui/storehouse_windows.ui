@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
+    <width>1200</width>
     <height>800</height>
    </rect>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1000</width>
+    <width>1200</width>
     <height>800</height>
    </size>
   </property>
@@ -36,7 +36,7 @@
    <widget class="QCommandLinkButton" name="call_for_help">
     <property name="geometry">
      <rect>
-      <x>800</x>
+      <x>1000</x>
       <y>20</y>
       <width>180</width>
       <height>30</height>
@@ -92,7 +92,7 @@
    <widget class="QPushButton" name="output">
     <property name="geometry">
      <rect>
-      <x>640</x>
+      <x>840</x>
       <y>70</y>
       <width>100</width>
       <height>40</height>
@@ -116,7 +116,7 @@
    <widget class="QPushButton" name="input">
     <property name="geometry">
      <rect>
-      <x>520</x>
+      <x>720</x>
       <y>70</y>
       <width>100</width>
       <height>40</height>
@@ -140,7 +140,7 @@
    <widget class="QPushButton" name="refresh">
     <property name="geometry">
      <rect>
-      <x>260</x>
+      <x>460</x>
       <y>70</y>
       <width>100</width>
       <height>40</height>
@@ -166,7 +166,7 @@
      <rect>
       <x>50</x>
       <y>130</y>
-      <width>900</width>
+      <width>1100</width>
       <height>650</height>
      </rect>
     </property>
@@ -177,7 +177,7 @@
      <number>5</number>
     </property>
     <attribute name="horizontalHeaderDefaultSectionSize">
-     <number>180</number>
+     <number>218</number>
     </attribute>
     <attribute name="verticalHeaderDefaultSectionSize">
      <number>36</number>
@@ -211,7 +211,7 @@
    <widget class="QPushButton" name="shop">
     <property name="geometry">
      <rect>
-      <x>380</x>
+      <x>580</x>
       <y>70</y>
       <width>121</width>
       <height>40</height>
@@ -235,7 +235,7 @@
    <widget class="QPushButton" name="pricechange">
     <property name="geometry">
      <rect>
-      <x>760</x>
+      <x>960</x>
       <y>70</y>
       <width>101</width>
       <height>41</height>
@@ -267,7 +267,7 @@
    <widget class="QPushButton" name="back">
     <property name="geometry">
      <rect>
-      <x>880</x>
+      <x>1080</x>
       <y>70</y>
       <width>71</width>
       <height>41</height>
