@@ -31,8 +31,8 @@ import time
 import sqlite3
 from matplotlib import pyplot as plt
 
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-plt.rcParams['figure.dpi'] = 250
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['figure.dpi'] = 100
 _translate = QtCore.QCoreApplication.translate
 class main_window(QMainWindow):
     def __init__(self, parent=None):
@@ -637,7 +637,7 @@ class shop_window(QMainWindow):
             self.ui.today_profit.setStyleSheet("color:green")
         self.ui.today_profit.setText("今日利润：{}".format(today_profit))
         # 绘制图片今日销售额
-        plt.figure(figsize=(1.2,1.2))
+        plt.figure(figsize=(3,3))
         plot_data = ph_data.groupby(["books_type"])["sales_money"].agg(sum)
         plt.pie(plot_data.values,
                 labels = plot_data.index,
@@ -646,10 +646,10 @@ class shop_window(QMainWindow):
         plt.savefig('today_sales_money.png')
         plt.close()
         self.ui.today_sales_plot.setPixmap(QPixmap('today_sales_money.png'))
-        # 绘制图片今日销售额
-        plt.figure(figsize=(1.2,1.2))
-        plt.pie([100,100,100,2*sum(ph_data.sales_number),round(0.1*today_sales,2)],
-                labels = ['房租','水电','薪水','快递费','商品税'],
+        # 绘制图片今日支出
+        plt.figure(figsize=(3,3))
+        plt.pie([100,2*sum(ph_data.sales_number),100,round(0.1*today_sales,2),100],
+                labels = ['房租','快递费','水电','商品税','薪水'],
                 shadow = False)
         plt.title('今日支出')
         plt.savefig('today_pay_plot.png')
@@ -887,6 +887,20 @@ class storehouse_window(QMainWindow):
         self.ui.back.clicked.connect(self.main_window.show)
         self.ui.back.clicked.connect(self.close)
 
+        # 联系客服
+        self.ui.call_for_help.clicked.connect(self.call_for_help)
+
+
+    def call_for_help(self):
+        clipboard = QGuiApplication.clipboard()
+        clipboard.setText("huyan35@mail2.sysu.edu.cn")
+        self.ui.call_for_help.setText("已复制到剪切板")
+        self.time1 = QTimer(self)
+        self.time1.singleShot(1000,self.timer_TimeOut1)
+
+    def timer_TimeOut1(self):
+        self.ui.call_for_help.setText("联系客服(点我复制)")
+
     def add_row(self, books_type, books_name, purchase_price, current_selling_price, inventory):
         """在表格上添加一行新的内容"""
         row = self.ui.table.rowCount()  # 表格的行数
@@ -936,7 +950,6 @@ class storehouse_input_main_window(QMainWindow):
 
         # 定义入库信息
         self.ui.confirm.clicked.connect(self.inbound)
-        self.ui.confirm.clicked.connect(self.showMsg)
 
         # 定义取消按钮
         self.ui.cancel.clicked.connect(self.close)
@@ -947,63 +960,52 @@ class storehouse_input_main_window(QMainWindow):
         book_name_input = self.ui.book_name_input.text()
         purchase_price_input = self.ui.purchase_price_input.text()
         number_input = self.ui.number_input.text()
-        # 连接数据库
-        connect = sqlite3.connect('books_info.db')
-        cursor = connect.cursor()
-        # 查询是否已有此本书
-        sql = '''SELECT * FROM database WHERE books_name = ?'''
-        result = cursor.execute(sql, (book_name_input,))
-        data = result.fetchall()
-        # 有这本书，加上入库的数目
-        if len(data) > 0:
-            sql = '''UPDATE database SET inventory = inventory+? WHERE books_name = ? '''
-            cursor.execute(sql, (number_input, book_name_input,))
-        # 没有这本书名，生成新书条目
+        if book_type_input and book_name_input and purchase_price_input and number_input:
+            # 连接数据库
+            connect = sqlite3.connect('books_info.db')
+            cursor = connect.cursor()
+            # 查询是否已有此本书
+            sql = '''SELECT * FROM database WHERE books_name = ?'''
+            result = cursor.execute(sql, (book_name_input,))
+            data = result.fetchall()
+            # 有这本书，加上入库的数目
+            if len(data) > 0:
+                sql = '''UPDATE database SET inventory = inventory+? WHERE books_name = ? '''
+                cursor.execute(sql, (number_input, book_name_input,))
+            # 没有这本书名，生成新书条目
+            else:
+                sql = 'select * from database'
+                result = cursor.execute(sql)
+                data = result.fetchall()  # 生成data
+                # 写入数据
+                book_number = data[-1][1] + 1
+                book_type = book_type_input
+                book_name = book_name_input
+                purchase_price = int(purchase_price_input)
+                lowest_price = purchase_price * 1.1
+                current_selling_price = purchase_price * 2.85
+                sales_this_week = 0
+                cumulative_sales = 0
+                inventory = int(number_input)
+                cursor.execute('''INSERT INTO database(books_number,books_type,books_name,
+                purchase_price,lowest_price,current_selling_price,
+                sales_this_week,cumulative_sales,inventory)VALUES (?,?,?,?,?,?,?,?,?)''', (book_number, book_type, book_name,
+                                                                                           purchase_price, lowest_price, current_selling_price,
+                                                                                           sales_this_week, cumulative_sales, inventory,))
+            # 断开数据库
+            sql = '''SELECT * FROM database WHERE books_name = ?'''
+            result = cursor.execute(sql, (book_name_input,))
+            data = result.fetchall()
+            QMessageBox.information(self, '提醒',"{}({}){}本已加入仓库。仓库共有{}{}本。".format(data[0][3],data[0][2],number_input,data[0][3],data[0][9]))
+            connect.commit()
+            connect.close()
+            # 清空输入框
+            self.ui.book_name_input.clear()
+            self.ui.number_input.clear()
+            self.ui.book_type_input.clear()
+            self.ui.purchase_price_input.clear()
         else:
-            sql = 'select * from database'
-            result = cursor.execute(sql)
-            data = result.fetchall()  # 生成data
-            # 写入数据
-            book_number = data[-1][1] + 1
-            book_type = book_type_input
-            book_name = book_name_input
-            purchase_price = int(purchase_price_input)
-            lowest_price = purchase_price * 1.1
-            current_selling_price = purchase_price * 2.85
-            sales_this_week = 0
-            cumulative_sales = 0
-            inventory = int(number_input)
-            cursor.execute('''INSERT INTO database(books_number,books_type,books_name,
-            purchase_price,lowest_price,current_selling_price,
-            sales_this_week,cumulative_sales,inventory)VALUES (?,?,?,?,?,?,?,?,?)''', (book_number, book_type, book_name,
-                                                                                       purchase_price, lowest_price, current_selling_price,
-                                                                                       sales_this_week, cumulative_sales, inventory,))
-        # 断开数据库
-        connect.commit()
-        connect.close()
-
-    def showMsg(self):  # 设置弹窗
-        # 管理员写入信息
-        book_name_input = self.ui.book_name_input.text()
-        number_input = self.ui.number_input.text()
-        # 连接数据库
-        connect = sqlite3.connect('books_info.db')
-        cursor = connect.cursor()
-        # 查询加入书目信息
-        sql = '''SELECT * FROM database WHERE books_name = ?'''
-        result = cursor.execute(sql, (book_name_input,))
-        data = result.fetchall()
-        QMessageBox.information(self, '提醒',"{}({}){}本已加入仓库。仓库共有{}{}本。".format(data[0][3],data[0][2],number_input,data[0][3],data[0][9]))
-        # 断开数据库
-        connect.commit()
-        connect.close()
-
-        #清空输入框
-        self.ui.book_name_input.clear()
-        self.ui.number_input.clear()
-        self.ui.book_type_input.clear()
-        self.ui.purchase_price_input.clear()
-
+            QMessageBox.information(self, '提醒',"请输入完整信息", QMessageBox.Yes)
 
 class storehouse_output_main_window(QMainWindow):
     def __init__(self,parent=None):
