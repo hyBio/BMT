@@ -625,12 +625,12 @@ class shop_window(QMainWindow):
         ph_data = ph_data.loc[[QDate.fromString('-'.join(i.split('-')[0:3]),"yyyy-M-d") == current_date for i in ph_data.time],:]
         # 显示销售情况
         days = 0
-        today_sales = round(sum(ph_data["sales_money"]),2)
+        today_sales = round(sum(ph_data["current_selling_price"]),2)
         self.ui.today_sales.setText("今日销售额：{}".format(today_sales))
         # 房租水电薪水各100，书籍邮费2元1本，税率10%
-        today_pay = round((100+100+100)*(days+1)+2*sum(ph_data.sales_number)+0.1*today_sales,2)
+        today_pay = round((100+100+100)*(days+1)+2*len(ph_data)+0.1*today_sales,2)
         self.ui.today_pay.setText("今日支出：{}".format(today_pay))
-        today_profit = round(sum(ph_data["sales_profit"])-today_pay,2)
+        today_profit = round(sum(ph_data["profit"])-today_pay,2)
         if today_profit < 0:
             self.ui.today_profit.setStyleSheet("color:red")
         else:
@@ -701,28 +701,29 @@ class shop_window(QMainWindow):
         self.ph_data[["purchase_price","current_selling_price"]] = self.ph_data[["purchase_price","current_selling_price"]].astype(float)
         self.ph_data["profit"] = self.ph_data["current_selling_price"]-self.ph_data["purchase_price"]
 
-        self.ph_data["sales_number"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("count")
-        self.ph_data["sales_money"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("sum")
-        self.ph_data["sales_profit"] = self.ph_data.groupby(["books_name"])["profit"].transform("sum")
-        # 保留两位小数
-        self.ph_data["sales_profit"] = self.ph_data["sales_profit"].round(2)
-        # 排序
-        self.ph_data = self.ph_data.sort_values(["sales_number","sales_profit"],ascending=False)
-        # 去重
-        self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
         # 显示销售情况
         days = QDate.fromString("2021年12月30日","yyyy年MM月dd日").daysTo(QDate.fromString(QDate.currentDate().toString("yyyy年MM月dd日"),"yyyy年MM月dd日"))
-        total_sales = round(sum(self.ph_data["sales_money"]),2)
+        total_sales = round(sum(self.ph_data["current_selling_price"]),2)
         self.ui.total_sales.setText("累计销售额：{}".format(total_sales))
         # 房租水电薪水各100，书籍邮费2元1本，税率10%
-        total_pay = round((100+100+100)*(days+1)+2*sum(self.ph_data.sales_number)+0.1*total_sales,2)
+        total_pay = round((100+100+100)*(days+1)+2*len(self.ph_data)+0.1*total_sales,2)
         self.ui.total_pay.setText("累计支出：{}".format(total_pay))
-        total_profit = round(sum(self.ph_data["sales_profit"])-total_pay,2)
+        total_profit = round(sum(self.ph_data["profit"])-total_pay,2)
         if total_profit < 0:
             self.ui.total_profit.setStyleSheet("color:red")
         else:
             self.ui.total_profit.setStyleSheet("color:green")
         self.ui.total_profit.setText("累计利润：{}".format(total_profit))
+
+        self.ph_data["sales_number"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("count")
+        self.ph_data["sales_money"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("sum")
+        self.ph_data["sales_profit"] = self.ph_data.groupby(["books_name"])["profit"].transform("sum")
+        # 保留两位小数
+        self.ph_data[["sales_money","sales_profit"]] = self.ph_data[["sales_money","sales_profit"]].round(2)
+        # 排序
+        self.ph_data = self.ph_data.sort_values(["sales_number","sales_profit"],ascending=False)
+        # 去重
+        self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
         for books_info in self.ph_data.itertuples():
             self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
 
@@ -746,37 +747,35 @@ class shop_window(QMainWindow):
             if len(self.ph_data) == 0:
                 QMessageBox.information(self, '提醒', '未找到相关记录，请核对日期后重新查找！', QMessageBox.Yes)
             else:
+                # 显示销售情况
+                self.ph_data[["purchase_price", "current_selling_price"]] = self.ph_data[["purchase_price", "current_selling_price"]].astype(float)
+                self.ph_data["profit"] = self.ph_data["current_selling_price"] - self.ph_data["purchase_price"]
+                days = start_time.daysTo(end_time)
+                total_sales = round(sum(self.ph_data["current_selling_price"]), 2)
+                self.ui.total_sales.setText("累计销售额：{}".format(total_sales))
+                # 房租水电薪水各100，书籍邮费2元1本，税率10%
+                total_pay = round((100 + 100 + 100) * (days + 1) + 2 * len(self.ph_data) + 0.1 * total_sales, 2)
+                self.ui.total_pay.setText("累计支出：{}".format(total_pay))
+                total_profit = round(sum(self.ph_data["profit"]) - total_pay, 2)
+                if total_profit < 0:
+                    self.ui.total_profit.setStyleSheet("color:red")
+                else:
+                    self.ui.total_profit.setStyleSheet("color:green")
+                self.ui.total_profit.setText("累计利润：{}".format(total_profit))
+                # 显示表格
                 self.ui.table.setRowCount(0)
                 self.ui.table.clearContents()
-                self.ph_data[["purchase_price","current_selling_price"]] = self.ph_data[["purchase_price","current_selling_price"]].astype(float)
-                self.ph_data["profit"] = self.ph_data["current_selling_price"]-self.ph_data["purchase_price"]
                 self.ph_data["sales_number"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("count")
                 self.ph_data["sales_money"] = self.ph_data.groupby(["books_name"])["current_selling_price"].transform("sum")
                 self.ph_data["sales_profit"] = self.ph_data.groupby(["books_name"])["profit"].transform("sum")
                 # 保留两位小数
-                self.ph_data["sales_profit"] = self.ph_data["sales_profit"].round(2)
+                self.ph_data[["sales_money","sales_profit"]] = self.ph_data[["sales_money","sales_profit"]].round(2)
                 # 排序
                 self.ph_data = self.ph_data.sort_values(["sales_number","sales_profit"],ascending=False)
                 # 去重
                 self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
                 for books_info in self.ph_data.itertuples():
                     self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
-            try:
-                # 显示销售情况
-                days = start_time.daysTo(end_time)
-                total_sales = round(sum(self.ph_data["sales_money"]),2)
-                self.ui.total_sales.setText("累计销售额：{}".format(total_sales))
-                # 房租水电薪水各100，书籍邮费2元1本，税率10%
-                total_pay = round((100+100+100)*(days+1)+2*sum(self.ph_data.sales_number)+0.1*total_sales,2)
-                self.ui.total_pay.setText("累计支出：{}".format(total_pay))
-                total_profit = round(sum(self.ph_data["sales_profit"])-total_pay,2)
-                if total_profit < 0:
-                    self.ui.total_profit.setStyleSheet("color:red")
-                else:
-                    self.ui.total_profit.setStyleSheet("color:green")
-                self.ui.total_profit.setText("累计利润：{}".format(total_profit))
-            except KeyError:
-                pass
         except IndexError:
             pass
 
@@ -833,6 +832,7 @@ class purchase_history(QMainWindow):
 
     def output(self):
         file = pd.DataFrame(self.ph_data)
+        file = file.loc[:,[0,1,2,4,5]]
         file.columns = ["顾客姓名","书籍类型","书籍名称","购入价格","交易时间"]
         # 尝试保存，忽略由于用户取消抛出的FileNotFoundError
         try:
