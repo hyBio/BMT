@@ -578,7 +578,7 @@ class shop_window(QMainWindow):
         self.ui.increase_inventory.clicked.connect(self.increase_inventory)
 
     def increase_inventory(self):
-        rec_code = QMessageBox.question(self, "询问", "确认采购？", QMessageBox.Yes | QMessageBox.No)
+        rec_code = QMessageBox.question(self, "询问", "确认投递采购清单给商店？", QMessageBox.Yes | QMessageBox.No)
         # 65536代表选择否
         if rec_code == 65536:
             pass
@@ -727,6 +727,27 @@ class shop_window(QMainWindow):
         for books_info in self.ph_data.itertuples():
             self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
 
+        # 绘制图片累计销售额
+        plt.figure(figsize=(3,3))
+        plot_data = self.ph_data.groupby(["books_type"])["sales_money"].agg(sum)
+        plt.pie(plot_data.values,
+                labels = plot_data.index,
+                shadow = False)
+        plt.title('累计销售额')
+        plt.savefig('total_sales_money.png')
+        plt.close()
+        self.ui.total_sales_plot.setPixmap(QPixmap('total_sales_money.png'))
+        # 绘制图片累计支出
+        plt.figure(figsize=(3,3))
+        plt.pie([100*(days+1),2*sum(self.ph_data.sales_number),100*(days+1),round(0.1*total_sales,2),100*(days+1)],
+                labels = ['房租','快递费','水电','商品税','薪水'],
+                shadow = False)
+        plt.title('累计支出')
+        plt.savefig('total_pay_plot.png')
+        plt.close()
+        self.ui.total_pay_plot.setPixmap(QPixmap('total_pay_plot.png'))
+
+
     def add_row(self, books_type, books_name, sales_number, sales_money, sales_profit):
         """在表格上添加一行新的内容"""
         row = self.ui.table.rowCount()  # 表格的行数
@@ -776,6 +797,27 @@ class shop_window(QMainWindow):
                 self.ph_data = self.ph_data.drop_duplicates(subset=["books_name"])
                 for books_info in self.ph_data.itertuples():
                     self.add_row(getattr(books_info,"books_type"),getattr(books_info,"books_name"),getattr(books_info,"sales_number"),getattr(books_info,"sales_money"),getattr(books_info,"sales_profit"))
+
+                # 绘制图片累计销售额
+                plt.figure(figsize=(3,3))
+                plot_data = self.ph_data.groupby(["books_type"])["sales_money"].agg(sum)
+                plt.pie(plot_data.values,
+                        labels = plot_data.index,
+                        shadow = False)
+                plt.title('累计销售额')
+                plt.savefig('total_sales_money.png')
+                plt.close()
+                self.ui.total_sales_plot.setPixmap(QPixmap('total_sales_money.png'))
+                # 绘制图片累计支出
+                plt.figure(figsize=(3,3))
+                plt.pie([100*(days+1),2*sum(self.ph_data.sales_number),100*(days+1),round(0.1*total_sales,2),100*(days+1)],
+                        labels = ['房租','快递费','水电','商品税','薪水'],
+                        shadow = False)
+                plt.title('累计支出')
+                plt.savefig('total_pay_plot.png')
+                plt.close()
+                self.ui.total_pay_plot.setPixmap(QPixmap('total_pay_plot.png'))
+
         except IndexError:
             pass
 
