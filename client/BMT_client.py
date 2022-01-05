@@ -583,24 +583,28 @@ class shop_window(QMainWindow):
         if rec_code == 65536:
             pass
         else:
-            books_info_db = './books_info.db'
-            connect = sqlite3.connect(books_info_db)
-            cursor = connect.cursor()
-            with open(os.getcwd()+"/采购清单.txt",'r',encoding='utf-8') as f:
-                lines = f.readlines()[1:]# 跳过行首
-                for row in lines:
-                    increase_books_info = row.strip('\n').split('\t')
-                    books_name = increase_books_info[1]
-                    inventory = int(increase_books_info[2])
-                    sql = 'SELECT inventory FROM database WHERE [books_name]==?'
-                    result = cursor.execute(sql, (books_name,))
-                    data = result.fetchall()[0][0]
-                    sql = 'UPDATE database SET inventory ==? WHERE [books_name]==?'
-                    inventory +=data
-                    cursor.execute(sql, (inventory, books_name,))
-            connect.commit()
-            connect.close()
-            QMessageBox.information(self, "提示", "采购成功", QMessageBox.Yes)
+            try:
+                books_info_db = './books_info.db'
+                connect = sqlite3.connect(books_info_db)
+                cursor = connect.cursor()
+                with open(os.getcwd()+"/采购清单.txt",'r',encoding='utf-8') as f:
+                    lines = f.readlines()[1:]# 跳过行首
+                    for row in lines:
+                        increase_books_info = row.strip('\n').split('\t')
+                        books_name = increase_books_info[1]
+                        inventory = int(increase_books_info[2])
+                        sql = 'SELECT inventory FROM database WHERE [books_name]==?'
+                        result = cursor.execute(sql, (books_name,))
+                        data = result.fetchall()[0][0]
+                        sql = 'UPDATE database SET inventory ==? WHERE [books_name]==?'
+                        inventory +=data
+                        cursor.execute(sql, (inventory, books_name,))
+                connect.commit()
+                connect.close()
+                os.remove(os.getcwd()+"/采购清单.txt")
+                QMessageBox.information(self, "提示", "采购成功", QMessageBox.Yes)
+            except FileNotFoundError:
+                QMessageBox.information(self, "提示", "暂无采购清单，请联系仓库投递", QMessageBox.Yes)
 
     def print_numbers(self):
         purchase_history_db = "./purchase_history.db"
