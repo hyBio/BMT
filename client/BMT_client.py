@@ -470,7 +470,7 @@ class register_to(QMainWindow):
         confirm = self.ui.password_2.text()
         # 如果有一个密码或者密码确认框为空
         if not password or not confirm:
-            QMessageBox.information(self, 'Error', '密码为空',
+            QMessageBox.information(self, '错误', '密码为空',
                                     QMessageBox.Yes)
         # 如果用户名已经存在
         elif self.account_info_db.is_has(username):
@@ -484,12 +484,10 @@ class register_to(QMainWindow):
                     QMessageBox.information(self, '错误',
                                             '用户名太短，请输入至少2个字符',
                                             QMessageBox.Yes)
-                    return
-                if len(password) < 6:
+                elif len(password) < 6:
                     QMessageBox.information(self, '错误',
                                             '密码少于六位，请重新输入',
                                             QMessageBox.Yes)
-                    return
                 else:
                     # 将用户信息写入数据库
                     self.account_info_db.insert_table(username, password)
@@ -498,12 +496,12 @@ class register_to(QMainWindow):
                                             QMessageBox.Yes)
                     # 注册完毕之后关闭窗口
                     self.close()
+                    self.register_success = register_success()
+                    self.register_success.show()
             else:
                 QMessageBox.information(self, '错误',
                                         '两次输入的密码不一致，请确认后重新输入',
                                         QMessageBox.Yes)
-            self.register_success = register_success()
-            self.register_success.show()
 
     def checkBox(self):
         if self.ui.checkBox.isChecked() is True:
@@ -1085,7 +1083,7 @@ class storehouse_input_main_window(QMainWindow):
             QMessageBox.information(self, '提醒',"{}({}){}本已加入仓库。仓库共有{}{}本。".format(data[0][3],data[0][2],number_input,data[0][3],data[0][9]))
             connect.commit()
             connect.close()
-            # 清空输入框
+            # 清空输入框e
             self.ui.book_name_input.clear()
             self.ui.number_input.clear()
             self.ui.book_type_input.clear()
