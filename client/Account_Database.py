@@ -141,5 +141,5 @@ if __name__ == '__main__':
     # data.insert_table('admin', 'password')
     data_ = data.read_table()
     print(data_)
-    # for i in range(23):  # 简单的创建用户
-    #     data.insert_table(chr(i + 65) * 5, chr(i + 65) + chr(i + 66) * 5)
+    # for i in range(24):  # 简单的创建用户
+    #     data.insert_table(chr(i + 65)+"123", chr(i + 65) + chr(i + 66)+"1234")

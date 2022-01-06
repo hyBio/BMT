@@ -118,7 +118,7 @@ class main_window(QMainWindow):
             if i.isChecked():
                 books_number += 1
                 total_price += float(self.ui.table.item(self.ui.check_list.index(i), 4).text())
-        rec_code = QMessageBox.question(self, "询问", "您选购了{}本书，共计{}元，确认购买？".format(books_number,total_price), QMessageBox.Yes | QMessageBox.No)
+        rec_code = QMessageBox.question(self, "询问", "您选购了{}本书，共计{}元，确认购买？".format(books_number,round(total_price),2), QMessageBox.Yes | QMessageBox.No)
         # 65536代表选择否
         if rec_code == 65536:
             pass
@@ -201,7 +201,7 @@ class main_window(QMainWindow):
         self.ui.check_list = []
         data = self.read_table(pic_type, books_type)
         for books_info in data:
-            self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
+            self.add_row(books_info[2], books_info[3], books_info[7], round(books_info[6],2), books_info[9])
 
     def show_table(self):
         # 添加表格对象
@@ -221,7 +221,7 @@ class main_window(QMainWindow):
         self.books_info_db = './books_info.db'
         data = self.read_table()
         for books_info in data:
-            self.add_row(books_info[2], books_info[3], books_info[7], books_info[6], books_info[9])
+            self.add_row(books_info[2], books_info[3], books_info[7], round(books_info[6],2), books_info[9])
 
     def read_table(self, pic_type="total", books_type="total"):
         """读取数据库中的所有元素"""
@@ -578,7 +578,7 @@ class shop_window(QMainWindow):
         self.ui.increase_inventory.clicked.connect(self.increase_inventory)
 
     def increase_inventory(self):
-        rec_code = QMessageBox.question(self, "询问", "确认投递采购清单给商店？", QMessageBox.Yes | QMessageBox.No)
+        rec_code = QMessageBox.question(self, "询问", "确认增加库存？", QMessageBox.Yes | QMessageBox.No)
         # 65536代表选择否
         if rec_code == 65536:
             pass
@@ -617,6 +617,8 @@ class shop_window(QMainWindow):
         connect.close()
         ph_data = pd.DataFrame(ph_data_total)
         ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
+        current_date = QDate.currentDate()
+        ph_data = ph_data.loc[[QDate.fromString('-'.join(i.split('-')[0:3]),"yyyy-M-d") == current_date for i in ph_data.time],:]
         ph_data[["purchase_price","current_selling_price"]] = ph_data[["purchase_price","current_selling_price"]].astype(float)
         ph_data["profit"] = ph_data["current_selling_price"]-ph_data["purchase_price"]
 
@@ -625,8 +627,7 @@ class shop_window(QMainWindow):
         ph_data["sales_profit"] = ph_data.groupby(["books_name"])["profit"].transform("sum")
         # 保留两位小数
         ph_data["sales_profit"] = ph_data["sales_profit"].round(2)
-        current_date = QDate.currentDate()
-        ph_data = ph_data.loc[[QDate.fromString('-'.join(i.split('-')[0:3]),"yyyy-M-d") == current_date for i in ph_data.time],:]
+
         # 显示销售情况
         days = 0
         today_sales = round(sum(ph_data["current_selling_price"]),2)
@@ -750,7 +751,42 @@ class shop_window(QMainWindow):
         plt.savefig('total_pay_plot.png')
         plt.close()
         self.ui.total_pay_plot.setPixmap(QPixmap('total_pay_plot.png'))
-
+        # 绘制销售情况变化
+        self.purchase_history_db = "./purchase_history.db"
+        connect = sqlite3.connect(self.purchase_history_db)
+        cursor = connect.cursor()
+        sql = 'SELECT * FROM database'
+        result = cursor.execute(sql)
+        self.ph_data_total = result.fetchall()
+        connect.commit()
+        connect.close()
+        self.ph_data = pd.DataFrame(self.ph_data_total)
+        self.ph_data.columns = "user_name books_type books_name purchase_price current_selling_price time".split(sep=" ")
+        self.ph_data["date"] = self.ph_data["time"].apply(lambda x:"-".join(x.split("-")[0:3]))
+        self.ph_data[["purchase_price","current_selling_price"]] = self.ph_data[["purchase_price","current_selling_price"]].astype(float)
+        self.ph_data["profit"] = self.ph_data["current_selling_price"]-self.ph_data["purchase_price"]
+        date_list = self.ph_data["date"].drop_duplicates()
+        tmp = pd.DataFrame()
+        for i in date_list:
+            data = self.ph_data.loc[self.ph_data.date == i]
+            day_profit = data.groupby("books_type")["profit"].agg("sum")
+            tmp = pd.concat([tmp,day_profit],axis=1)
+        tmp.columns = date_list
+        tmp = tmp.fillna(0)
+        tmp = tmp.astype(float).round(2).T
+        tmp['全部'] = tmp.apply(sum,axis=1)
+        plt.figure(figsize=(6,2.8))
+        plt.title("每日利润折线图")
+        plt.xlabel("日期")
+        plt.ylabel("利润")
+        plt.xticks(rotation=30)
+        for i in tmp.columns:
+            plt.plot(tmp.index,tmp[i])
+        plt.legend(tmp.columns,ncol = 1,bbox_to_anchor=(1.05, 1))
+        plt.tight_layout()
+        plt.savefig('date_profit.png')
+        plt.close()
+        self.ui.sales_trend_plot.setPixmap(QPixmap('date_profit.png'))
 
     def add_row(self, books_type, books_name, sales_number, sales_money, sales_profit):
         """在表格上添加一行新的内容"""
