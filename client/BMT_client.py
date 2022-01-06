@@ -20,6 +20,7 @@ from ui import storehouse_shop_window as shsw
 from ui import storehouse_input_main_window as shim
 from ui import storehouse_output_main_window as shom
 from ui import storehouse_pricechange_main_window as shpm
+from ui import shop_pricechange as sp
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -576,6 +577,9 @@ class shop_window(QMainWindow):
 
         # 增加库存
         self.ui.increase_inventory.clicked.connect(self.increase_inventory)
+        # 修改售价
+        self.ui.shop_pricechange = shop_pricechange()
+        self.ui.pricechange.clicked.connect(self.ui.shop_pricechange.show)
 
     def increase_inventory(self):
         rec_code = QMessageBox.question(self, "询问", "确认增加库存？", QMessageBox.Yes | QMessageBox.No)
@@ -1310,9 +1314,9 @@ class storehouse_pricechange_main_window(QMainWindow):
         result=cursor.execute(sql,(book_name,))
         books_info2=result.fetchall()
         for i in range(len(books_info2)):
-            original_price=books_info2[i][4]
+            original_price=round(books_info2[i][4],2)
         # 弹窗提示当前进价
-        QMessageBox.information(self,'当前进价','{}当前进价为{}。'.format(book_name,original_price))
+        QMessageBox.information(self,'当前进价','《{}》当前进价为{}。'.format(book_name,original_price))
         # 断开数据库
         connect.commit()
         connect.close()
@@ -1322,20 +1326,120 @@ class storehouse_pricechange_main_window(QMainWindow):
         now_price=self.ui.price_change_input.text()
         try:
             now_price=round(float(now_price),2)
-            lowest_price=now_price*1.1
-            current_selling_price=now_price*2.85
+            lowest_price=round(now_price*1.1,2)
+            current_selling_price=round(now_price/0.35,2)
             # 连接数据库
             connect=sqlite3.connect('books_info.db')
             cursor=connect.cursor()
             # 更新数据库
             sql='''UPDATE database SET purchase_price=?,lowest_price=?,current_selling_price=? WHERE books_name=?'''
             cursor.execute(sql,(now_price,lowest_price,current_selling_price,book_name))
-            QMessageBox.information(self,'进价更新','{}进价更新为{}。'.format(book_name,now_price))
+            QMessageBox.information(self,'进价更新','《{}》进价更新为{}。'.format(book_name,now_price))
             # 断开数据库
             connect.commit()
             connect.close()
         except:
             QMessageBox.information(self,'警告','请输入数字！',QMessageBox.Yes)
+
+
+class shop_pricechange(QMainWindow):
+    def __init__(self,parent=None):
+        super(shop_pricechange,self).__init__(parent)
+        self.ui=sp.Ui_price_change()
+        self.ui.setupUi(self)
+        # 定义按钮功能连接
+        self.ui.original_price.clicked.connect(self.original_Msg)
+        self.ui.confirm.clicked.connect(self.pricechange)
+        self.ui.cancel.clicked.connect(self.close)
+        # 连接数据库
+        connect=sqlite3.connect('books_info.db')
+        cursor=connect.cursor()
+        # 提取数据库信息
+        sql='''SELECT * FROM database'''
+        result=cursor.execute(sql)
+        books_info=result.fetchall()
+        # 类别下拉框输入信息
+        books_type=[]
+        for i in range(len(books_info)):
+            if books_info[i][2] not in books_type:
+                books_type.append(books_info[i][2])
+        self.ui.book_type.addItem('请选择书籍类别')
+        self.ui.book_type.addItems(books_type)
+        # 类别下拉框连接到书名下拉框
+        self.ui.book_type.activated[str].connect(self.show_books_name)
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def show_books_name(self,book_type):
+        self.ui.book_name.clear()
+        # 连接数据库
+        connect=sqlite3.connect('books_info.db')
+        cursor=connect.cursor()
+        # 提取数据库信息
+        sql='''SELECT * FROM database'''
+        result=cursor.execute(sql)
+        books_info=result.fetchall()
+        # 书名下拉框输入信息
+        books_type=[]
+        for i in range(len(books_info)):
+            if books_info[i][2] not in books_type:
+                books_type.append(books_info[i][2])
+        for i in range(len(books_type)):
+            if book_type==books_type[i]:
+                sql='''SELECT * FROM database WHERE books_type=?'''
+                result=cursor.execute(sql,(books_type[i],))
+                books_info1=result.fetchall()
+                books_name = []
+                for j in range(len(books_info1)):
+                    if books_info1[j][3] not in books_name:
+                        books_name.append(books_info1[j][3])
+                self.ui.book_name.addItems(books_name)
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def original_Msg(self):
+        # 连接数据库
+        connect=sqlite3.connect('books_info.db')
+        cursor=connect.cursor()
+        # 读取数据库信息
+        book_name = self.ui.book_name.currentText()
+        sql='''SELECT * FROM database WHERE books_name=?'''
+        result=cursor.execute(sql,(book_name,))
+        books_info2=result.fetchall()
+        for i in range(len(books_info2)):
+            original_price=round(books_info2[i][6],2)
+        # 弹窗提示当前进价
+        QMessageBox.information(self,'当前售价','《{}》当前售价为{}。'.format(book_name,original_price))
+        # 断开数据库
+        connect.commit()
+        connect.close()
+
+    def pricechange(self):
+        book_name=self.ui.book_name.currentText()
+        now_price=self.ui.price_change_input.text()
+        now_price=round(float(now_price),2)
+        try:
+            # 连接数据库
+            connect=sqlite3.connect('books_info.db')
+            cursor=connect.cursor()
+            # 更新数据库
+            sql ='''SELECT * FROM database WHERE [books_name]=?'''
+            result = cursor.execute(sql, (book_name,))
+            lowest_price = result.fetchall()[0][5]
+            if now_price < lowest_price:
+                QMessageBox.information(self, '售价更新', '低于最低售价，可能赔本，请核算后再次修改!')
+            else:
+                sql='''UPDATE database SET current_selling_price=? WHERE books_name=?'''
+                cursor.execute(sql,(now_price,book_name))
+                QMessageBox.information(self,'售价更新','《{}》售价更新为{}。'.format(book_name,now_price))
+            # 断开数据库
+            connect.commit()
+            connect.close()
+        except:
+            QMessageBox.information(self,'警告','请输入数字！',QMessageBox.Yes)
+
 
 
 if __name__ == "__main__":
