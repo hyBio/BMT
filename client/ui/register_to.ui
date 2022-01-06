@@ -152,27 +152,6 @@
      <string>注册</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="exit">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>260</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>黑体</family>
-      <pointsize>11</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>取消</string>
-    </property>
-   </widget>
    <widget class="QLineEdit" name="account">
     <property name="geometry">
      <rect>
@@ -302,8 +281,8 @@
    <widget class="QPushButton" name="back">
     <property name="geometry">
      <rect>
-      <x>380</x>
-      <y>20</y>
+      <x>480</x>
+      <y>260</y>
       <width>91</width>
       <height>23</height>
      </rect>
@@ -340,7 +319,6 @@
    <zorder>label_4</zorder>
    <zorder>password_2</zorder>
    <zorder>register_to</zorder>
-   <zorder>exit</zorder>
    <zorder>account</zorder>
    <zorder>label</zorder>
    <zorder>label_6</zorder>
@@ -357,7 +335,6 @@
   <tabstop>checkBox</tabstop>
   <tabstop>password_2</tabstop>
   <tabstop>register_to</tabstop>
-  <tabstop>exit</tabstop>
   <tabstop>call_for_help</tabstop>
   <tabstop>back</tabstop>
   <tabstop>log_in</tabstop>
