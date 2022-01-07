@@ -1058,24 +1058,27 @@ class storehouse_input_main_window(QMainWindow):
                 cursor.execute(sql, (number_input, book_name_input,))
             # 没有这本书名，生成新书条目
             else:
-                sql = 'select * from database'
-                result = cursor.execute(sql)
-                data = result.fetchall()  # 生成data
-                # 写入数据
-                book_number = data[-1][1] + 1
-                book_type = book_type_input
-                book_name = book_name_input
-                purchase_price = int(purchase_price_input)
-                lowest_price = purchase_price * 1.1
-                current_selling_price = purchase_price * 2.85
-                sales_this_week = 0
-                cumulative_sales = 0
-                inventory = int(number_input)
-                cursor.execute('''INSERT INTO database(books_number,books_type,books_name,
-                purchase_price,lowest_price,current_selling_price,
-                sales_this_week,cumulative_sales,inventory)VALUES (?,?,?,?,?,?,?,?,?)''', (book_number, book_type, book_name,
-                                                                                           purchase_price, lowest_price, current_selling_price,
-                                                                                           sales_this_week, cumulative_sales, inventory,))
+                try:
+                    sql = 'select * from database'
+                    result = cursor.execute(sql)
+                    data = result.fetchall()  # 生成data
+                    # 写入数据
+                    book_number = data[-1][1] + 1
+                    book_type = book_type_input
+                    book_name = book_name_input
+                    purchase_price = round(float(purchase_price_input),2)
+                    lowest_price = round(purchase_price * 1.1,2)
+                    current_selling_price = round(purchase_price/0.35,2)
+                    sales_this_week = 0
+                    cumulative_sales = 0
+                    inventory = int(number_input)
+                    cursor.execute('''INSERT INTO database(books_number,books_type,books_name,
+                    purchase_price,lowest_price,current_selling_price,
+                    sales_this_week,cumulative_sales,inventory)VALUES (?,?,?,?,?,?,?,?,?)''', (book_number, book_type, book_name,
+                                                                                               purchase_price, lowest_price, current_selling_price,
+                                                                                               sales_this_week, cumulative_sales, inventory,))
+                except:
+                    QMessageBox.information(self, '提醒', "请输入数字", QMessageBox.Yes)
             # 断开数据库
             sql = '''SELECT * FROM database WHERE books_name = ?'''
             result = cursor.execute(sql, (book_name_input,))
@@ -1203,6 +1206,7 @@ class storehouse_shop_window(QMainWindow):
         self.ui.generate.clicked.connect(self.output_csv)
         # 定义生成按钮为返回仓库
         self.ui.generate.clicked.connect(self.close)
+        self.ui.tableWidget.setRowCount(0)
         # 填写采购单内容
         # 连接数据库
         connect = sqlite3.connect('books_info.db')
